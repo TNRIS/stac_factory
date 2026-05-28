@@ -1,0 +1,5 @@
+catalog
+config.py
+config_db.sh
+stac.log
+__pycache__

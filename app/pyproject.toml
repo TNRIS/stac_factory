@@ -1,0 +1,27 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.42.95",
+    "gdal>=3.12.4",
+    "geopandas>=1.1.3",
+    "jsonschema>=4.26.0",
+    "matplotlib>=3.10.9",
+    "ogr>=0.61.1",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.2",
+    "pdal>=3.5.3",
+    "psycopg>=3.3.4",
+    "psycopg-pool>=3.3.1",
+    "pypgstac>=0.9.11",
+    "pystac>=1.14.3",
+    "rasterio>=1.5.0",
+    "remotezip>=0.12.3",
+    "requests>=2.33.1",
+    "shapely>=2.1.2",
+    "types-boto3-s3>=1.43.0",
+    "uv>=0.11.10",
+]

@@ -1,0 +1,1 @@
+from .app.stac.build_stac import gen_this_stac_collection
