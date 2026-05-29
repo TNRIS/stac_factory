@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any, List
 from aws.s_three import Collection as S3Collection, WarehouseClient, Resource
 from .TxItem import TxItem
+from root import ROOT
 # Import geographic manipulation libraries
 import geopandas as gpd
 import pandas as pd
@@ -213,8 +214,8 @@ class TxCollection(pystac.Collection):
         self.extra_fields["txgio:template"] = coll_api["template"]
 
         # Tag counties
-        counties = gpd.read_file(get_project_root() / "txgio_extension" / "county_boundaries.geojson")
-        counties_buffer = open("./txgio_extension/county_boundaries.geojson")
+        counties = gpd.read_file(f"{ROOT}/stac/txgio_extension/county_boundaries.geojson")
+        counties_buffer = open(f"{ROOT}/stac/txgio_extension/county_boundaries.geojson")
         counties_dict = json.load(counties_buffer)
         intersections = counties.intersects(self.geo)
         spatial_tags = ""
