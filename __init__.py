@@ -1,1 +1,3 @@
-from .stac_factory.stac.build_stac import gen_this_stac_collection
+from .stac.build_stac import gen_this_stac_collection
+
+gen_this_stac_collection = gen_this_stac_collection
