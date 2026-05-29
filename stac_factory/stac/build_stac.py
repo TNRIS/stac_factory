@@ -77,7 +77,7 @@ def build_collection(wh_collection):
 
                     tx_collection.assets[asset.fname] = passet
                 
-                tx_collection.save(dest_href=f"/root/workspace/app/catalog/{collection_root}")
+                tx_collection.save(dest_href=f"/root/workspace/stac_factory/catalog/{collection_root}")
             return tx_collection.to_dict()
         else:
             print(f"There are no items or assets accessible for the collection: {collection_root}")
