@@ -11,7 +11,7 @@ import pandas as pd
 from osgeo import gdal
 import ogr
 from .TxExtent import TxExtent
-from stac import log_info, log_exception, stream_handler, get_project_root
+from stac import log_info, log_exception, stream_handler
 from aws.s_three import WarehouseClient, Resource, Collection as S3Collection
 from config import DATA_WH_CONF as DATA_WH_CONF
 from openpyxl import Workbook, load_workbook
@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from pystac import STACTypeError
 from pandas import DataFrame
 import time, gc
+from root import ROOT
 
 from multiprocessing import Pool, Process, Semaphore, JoinableQueue
 
@@ -229,7 +230,7 @@ class TxCollection(pystac.Collection):
         self.extra_fields["txgio:spatial_keywords"] = spatial_tags[1:]
 
         # Tag cities
-        cities = gpd.read_file(get_project_root() / "txgio_extension" / "county_boundaries.geojson")
+        cities = gpd.read_file(ROOT / "txgio_extension" / "county_boundaries.geojson")
         cities_buffer = open("./txgio_extension/TX_Cities.json")
         cities_dict = json.load(cities_buffer)
         intersections2 = cities.intersects(self.geo)
