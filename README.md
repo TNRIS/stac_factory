@@ -12,7 +12,7 @@ Create a local django db (follow the instructions in api.tnris.org repo) and cop
 If you want to use our real db then add tunnel.sh and run it. then configure config_db.sh
 
 ## Use as a library
-0. prereqs, I recommend fedora os. Make sure dnf python, pdal, gdal, gdal-devel, uv, and g++ packages are installed
+0. prereqs, I recommend fedora os. Make sure dnf python, python3-devel, pdal, PDAL-devel, gdal, gdal-devel, uv, and g++ packages are installed
 1. git clone https://github.com/TNRIS/stac_factory.git
 2. uv add /path/to/stac_factory directory (Change to where you installed.)
 3. import gen_this_stac_collection from path to stac_factory
