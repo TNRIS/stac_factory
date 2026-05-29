@@ -1,5 +1,5 @@
 [project]
-name = "workspace"
+name = "stac_factory"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -10,7 +10,7 @@ dependencies = [
     "pypgstac>=0.9.11",
 ]
 
-[tool.uv.workspace]
+[tool.uv.stac_factory]
 members = [
     "app",
 ]
