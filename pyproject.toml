@@ -25,3 +25,6 @@ dependencies = [
     "types-boto3-s3>=1.43.0",
     "uv>=0.11.10",
 ]
+
+[tool.setuptools]
+packages = ["stac_factory"]
