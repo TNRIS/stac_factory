@@ -2,7 +2,7 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/rust
 {
     "runArgs": ["--network=host"],
-    "name": "datahub-s3-crawler-devcontainer",
+    "name": "stac_factory-devcontainer",
     // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
     "build": {
         "dockerfile": "../Dockerfile",
@@ -17,7 +17,7 @@
     ],
     "workspaceMount": "source=${localWorkspaceFolder},target=/root/workspace,type=bind",
     "workspaceFolder": "/root/workspace",
-    "postCreateCommand": "dnf install python && dnf install pdal && dnf install gdal",
+    "postCreateCommand": "dnf install python && dnf install pdal && dnf install gdal && uv pip install -r pyproject.toml",
     //echo conda activate pdal >> ~/.bashrc && conda run -n pdal
     // Features to add to the dev container. More info: https://containers.dev/features.
     // "features": {},
