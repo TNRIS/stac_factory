@@ -27,4 +27,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["stac_factory"]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
