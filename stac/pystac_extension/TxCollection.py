@@ -230,7 +230,7 @@ class TxCollection(pystac.Collection):
 
         # Tag cities
         cities = gpd.read_file(ROOT / "txgio_extension" / "county_boundaries.geojson")
-        cities_buffer = open("./txgio_extension/TX_Cities.json")
+        cities_buffer = open(ROOT / "txgio_extension" / "TX_Cities.json")
         cities_dict = json.load(cities_buffer)
         intersections2 = cities.intersects(self.geo)
         for i in range(len(intersections2)):
