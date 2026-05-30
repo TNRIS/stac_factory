@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 from pystac import STACTypeError
 from pandas import DataFrame
 import time, gc
-from root import ROOT
 
 from multiprocessing import Pool, Process, Semaphore, JoinableQueue
 
@@ -215,8 +214,8 @@ class TxCollection(pystac.Collection):
         self.extra_fields["txgio:template"] = coll_api["template"]
 
         # Tag counties
-        counties = gpd.read_file(f"{ROOT}/stac/txgio_extension/county_boundaries.geojson")
-        counties_buffer = open(f"{ROOT}/stac/txgio_extension/county_boundaries.geojson")
+        counties = gpd.read_file(f"{ROOT}/txgio_extension/county_boundaries.geojson")
+        counties_buffer = open(f"{ROOT}/txgio_extension/county_boundaries.geojson")
         counties_dict = json.load(counties_buffer)
         intersections = counties.intersects(self.geo)
         spatial_tags = ""

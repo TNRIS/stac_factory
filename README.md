@@ -14,7 +14,7 @@ If you want to use our real db then add tunnel.sh and run it. then configure con
 ## Use as a library
 0. prereqs, I recommend fedora os. Make sure dnf python, python3-devel, pdal, PDAL-devel, gdal, gdal-devel, uv, and g++ packages are installed
 1. git clone https://github.com/TNRIS/stac_factory.git
-2. uv add /path/to/stac_factory directory (Change to where you installed.)
+2. uv pip install -e /path/to/stac_factory directory (Change to where you installed.)
 3. import gen_this_stac_collection from path to stac_factory
 4. When you call gen_this_stac_factory just pass in name of s3 key
 5. This will upsert the collection into the postgres db in your environment
