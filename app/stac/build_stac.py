@@ -32,7 +32,7 @@ def build_collection(wh_collection, s3_configuration):
     if(collection_root == "usgs-nhap-1981-cir-75cm"):
         print(f"Skipping {collection_root}")
         return
-    FILE_DIR = f"./catalog/{collection_root}/collection.json"
+    FILE_DIR = f"/root/workspace/stac_factory/catalog/{collection_root}/collection.json"
     FILE_NOT_FOUND = not os.path.exists(FILE_DIR)
 
     # Loop through each collection.
@@ -67,21 +67,13 @@ def build_collection(wh_collection, s3_configuration):
                     tx_collection.assets[asset.fname] = passet
                 
                 tx_collection.save(dest_href=f"/root/workspace/stac_factory/catalog/{collection_root}")
-            return tx_collection.to_dict()
+            return tx_collection
         else:
             print(f"There are no items or assets accessible for the collection: {collection_root}")
 
     else:
-        tx_collection = pystac.read_file(FILE_DIR)
-        dict = tx_collection.to_dict()
-        # stac_catalog.add_child(tx_collection)
-        dict_items = tx_collection.get_items()
-        items = []
-        for i in dict_items:
-            items.append(i.to_dict())
-        loader.load_items(items, insert_mode=Methods.upsert)
-        
-        return tx_collection.to_dict()
+        tx_collection = pystac.read_file(f"/root/workspace/stac_factory/catalog/{collection_root}")        
+        return tx_collection
     
 
 def gen_stac_collection() -> None:
@@ -106,8 +98,14 @@ def gen_this_stac_collection(whc, s3_configuration):
     """
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
-    wh_client = WarehouseClient(s3_configuration)
+    tx_collection = build_collection(whc, s3_configuration)
+    collections = [tx_collection.to_dict()]
+    dict_items = tx_collection.get_items()
 
-    collections = []
-    collections.append(build_collection(whc, s3_configuration))
+    items = []
+    for i in dict_items:
+        items.append(i.to_dict())
+    loader.load_items(items, insert_mode=Methods.upsert)
+
+
     loader.load_collections(collections, insert_mode=Methods.upsert)
