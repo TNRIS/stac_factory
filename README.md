@@ -2,7 +2,7 @@
 1. Create a config.py from config_example.py with test and prod s3 buckets. (I can send a configured file to TWDB employees)
 2. Change the username in the useradd line on Dockerfile to your local user. (Currently lh)
 3. create a config_db.sh with your postgresql db. (config_db_example.sh can be used as a base)
-4. put your API-CollectionID-CollectionName-Crosswalk.xlsx in the txgio_extension directory
+4. put your API-CollectionID-CollectionName-Crosswalk.xlsx in the txgio_extension directory (May not be necessary for single collection generation)
 ## Dev Container Setup
 1. install remote - containers plugin @ https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers
 2. press cmd-p and type `>Dev Containers Reopen Folder Locally`
@@ -12,12 +12,14 @@ Create a local django db (follow the instructions in api.tnris.org repo) and cop
 If you want to use our real db then add tunnel.sh and run it. then configure config_db.sh
 
 ## Use as a library
-0. prereqs, I recommend fedora os. Make sure dnf python, python3-devel, pdal, PDAL-devel, gdal, gdal-devel, uv, and g++ packages are installed
+0. prereqs, I recommend fedora os. Make sure python, python3-devel, pdal, PDAL-devel, gdal, gdal-devel, uv, and g++ packages are installed
 1. git clone https://github.com/TNRIS/stac_factory.git
-2. uv pip install -e /path/to/stac_factory directory (Change to where you installed.)
-3. import gen_this_stac_collection from path to stac_factory
-4. When you call gen_this_stac_factory just pass in name of s3 key
-5. This will upsert the collection into the postgres db in your environment
+2. export PYTHONPATH="/path/to/your/library:$PYTHONPATH"
+3. uv pip install -e /path/to/stac_factory directory (Change to where you installed.) ((might work with uv add rather than uv pip install but I haven't tested yet. Both use uv though under the hood.))
+4. import gen_this_stac_collection from path to stac_factory
+5. When you call gen_this_stac_factory just pass in a object with api keys.
+6. This will upsert the collection into the postgres db in your environment
+7. (Make sure you activate venv) Either using the activate script or selecting interpretor through vscode
 
 TODO:
 1. There is no way to reference naip-2016-nc-cir-1m/,  it only has a USGISID and that's not the id in the directory structure. None of the tiles match up to the index there, neither do any of the file names there. I'm not sure hat's going on there. I think that ones messed up.

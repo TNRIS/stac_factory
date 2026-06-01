@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "testimport.py",
             "console": "integratedTerminal",
-            "cwd": "/root/workspace/"
+            "cwd": "/root/workspace/app/"
         }
     ]
 }

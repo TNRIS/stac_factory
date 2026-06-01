@@ -5,7 +5,6 @@ from datetime import datetime
 from stac import log_info, log_exception, stream_handler
 from aws.s_three import WarehouseClient, Resource, Collection as S3Collection
 from osgeo import gdal
-from config import DATA_WH_CONF
 import pdal
 import geopandas as gpd
 
@@ -21,7 +20,7 @@ class TxItem(pystac.Item):
     Override pystacs Item
     """
 
-    def __init__(self, resources: List[Resource], spatial_reference: str, collection_name: str, preprocessed_geometry: dict | None, resolution: str | None):
+    def __init__(self, resources: List[Resource], spatial_reference: str, collection_name: str, preprocessed_geometry: dict | None, resolution: str | None, data_wh_configuration):
         """
         TxItem Constructor
         
@@ -32,7 +31,7 @@ class TxItem(pystac.Item):
         :param collection_name: Description
         """
         self.spatial_reference = spatial_reference
-        self.wh_client: WarehouseClient = WarehouseClient(DATA_WH_CONF)
+        self.wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
         self.stac_id = f"{collection_name}_{resources[0].index}"
         self.kwargs = gdal.InfoOptions(
             allMetadata=True,

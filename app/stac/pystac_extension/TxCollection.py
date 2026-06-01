@@ -9,19 +9,11 @@ from root import ROOT
 import geopandas as gpd
 import pandas as pd
 from osgeo import gdal
-import ogr
 from .TxExtent import TxExtent
 from stac import log_info, log_exception, stream_handler
 from aws.s_three import WarehouseClient, Resource, Collection as S3Collection
-from config import DATA_WH_CONF as DATA_WH_CONF
-from openpyxl import Workbook, load_workbook
-import rasterio
-import matplotlib.pyplot as plt
-from pystac import STACTypeError
 from pandas import DataFrame
-import time, gc
-
-from multiprocessing import Pool, Process, Semaphore, JoinableQueue
+import time
 
 # Toggle this to True in order to rebuild the catalog from scratch.
 COMPLETE_REBUILD_FLAG = False
@@ -37,7 +29,6 @@ class TxCollection(pystac.Collection):
         "LAZ_3D_BBOX":  True,
         "API_URL": "https://api.tnris.org"
     }
-    wh_client: WarehouseClient = WarehouseClient(DATA_WH_CONF)
     panda_layer: dict | None = None
     resolution: str | None = None
     root = ""
@@ -47,6 +38,7 @@ class TxCollection(pystac.Collection):
         self,
         root,
         s3_collection: S3Collection,
+        data_wh_configuration,
         stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
                                       "https://stac-extensions.github.io/file/v2.1.0/schema.json"]):
         """
@@ -58,6 +50,9 @@ class TxCollection(pystac.Collection):
         """
         self.root = root
         self.s3_collection = s3_collection
+        self.wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
+        self.data_wh_configuration = data_wh_configuration
+
         href = f"./catalog/{root}/collection.json"
         print(f"Starting collection {root}")
         # Default extents. (Required for constructor)
@@ -154,7 +149,7 @@ class TxCollection(pystac.Collection):
         if(FILE_NOT_FOUND or REBUILD_FLAG):
             tx_item = None
             try:
-                tx_item = TxItem(resources, self.extra_fields.get("txgio:spatial_reference"), self.id, self.tile, self.resolution)
+                tx_item = TxItem(resources, self.extra_fields.get("txgio:spatial_reference"), self.id, self.tile, self.resolution, self.data_wh_configuration)
             except Exception as e:
                 print(e)
                 return None
@@ -530,7 +525,6 @@ class TxCollection(pystac.Collection):
                 #Proceed to add the next item to the resources array to combine into one item.
                 continue
             # self.add_stac_items(resources, self.root, COMPLETE_REBUILD_FLAG)
-            #p = Process(target=self.add_stac_items, args=(resources, self.root, COMPLETE_REBUILD_FLAG))
             self.add_stac_items(resources, self.root, COMPLETE_REBUILD_FLAG)
             resources = []
 

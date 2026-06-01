@@ -12,7 +12,6 @@ from pandas import DataFrame
 from pathlib import Path
 
 from config.PathTyping import DataWhPath, ItemPath, AssetPath
-import multiprocessing
 
 class Resource:
     """ 
@@ -37,23 +36,23 @@ class Resource:
             print(f"Index type for {self.collection_name}")
         self.filename = os.path.splitext(os.path.split(self.path)[1])[0]
 
-    def get_contents(self):
-        gdal.UseExceptions()
-        vsicurl_path = f"/vsizip//vsis3/{DATA_WH_CONF.BUCKET}/{self.path}"
+    # def get_contents(self):
+    #     gdal.UseExceptions()
+    #     vsicurl_path = f"/vsizip//vsis3/{DATA_WH_CONF.BUCKET}/{self.path}"
 
-        try:
-            zip_contents = gdal.ReadDirRecursive(vsicurl_path)
-            if zip_contents:
-                print(f"\nContents of '{vsicurl_path} include:\n")
-                for item in zip_contents:
-                    print(f"\t- {item}")
-            else:
-                print(f"No contents found or unable to access in {vsicurl_path}")
-        except Exception as e:
-            print(f"Error occurred attempting to read contents of {vsicurl_path}")
-        else:
-            self.contents = zip_contents
-            return zip_contents
+    #     try:
+    #         zip_contents = gdal.ReadDirRecursive(vsicurl_path)
+    #         if zip_contents:
+    #             print(f"\nContents of '{vsicurl_path} include:\n")
+    #             for item in zip_contents:
+    #                 print(f"\t- {item}")
+    #         else:
+    #             print(f"No contents found or unable to access in {vsicurl_path}")
+    #     except Exception as e:
+    #         print(f"Error occurred attempting to read contents of {vsicurl_path}")
+    #     else:
+    #         self.contents = zip_contents
+    #         return zip_contents
         
     def __str__(self):
         return f"{self.path}"
@@ -151,7 +150,7 @@ class BucketClient:
     A bucket with a s3 client.
     """
 
-    def __init__(self, s3config=DATA_WH_CONF):
+    def __init__(self, s3config):
         self.s3config = s3config
         self.name = self.s3config.BUCKET
         self.url = self.s3config.BUCKET_URL
@@ -192,7 +191,6 @@ class WarehouseClient(BucketClient):
     """
         A s3 bucket client with functions for accessing the data warehouse
     """
-    
     def get_collections(self) -> List[Collection]:
         dirs_array = self.get_dirs(self.root, self.s3config.COLLECTION_ROOT)
         collection_names = []
@@ -217,7 +215,7 @@ class WarehouseClient(BucketClient):
     
     def build_collections(self) -> List[Collection]:
         """
-        Build a list of collections based on the configuration which defaults to DATA_WH_CONF
+        Build a list of collections based on the configuration which defaults to self.s3_config
         """
         collections: List[Collection] = []
         collection_names = []
@@ -288,5 +286,5 @@ class WarehouseClient(BucketClient):
         """
         return f"{self.get_vsicurl_path(rsc_path) }"
 
-    def __init__(self, s3config=DATA_WH_CONF):
+    def __init__(self, s3config):
         super().__init__(s3config)
