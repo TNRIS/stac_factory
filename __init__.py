@@ -1,4 +1,3 @@
-from .app import config, stac.
-from stac.build_stac import gen_this_stac_collection
-
+from app.stac.build_stac import gen_this_stac_collection
+from app.config import S3Config
 gen_this_stac_collection = gen_this_stac_collection

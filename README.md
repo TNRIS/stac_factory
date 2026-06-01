@@ -16,10 +16,11 @@ If you want to use our real db then add tunnel.sh and run it. then configure con
 1. git clone https://github.com/TNRIS/stac_factory.git
 2. export PYTHONPATH="/path/to/your/library:$PYTHONPATH"
 3. uv pip install -e /path/to/stac_factory directory (Change to where you installed.) ((might work with uv add rather than uv pip install but I haven't tested yet. Both use uv though under the hood.))
-4. import gen_this_stac_collection from path to stac_factory
-5. When you call gen_this_stac_factory just pass in a object with api keys.
-6. This will upsert the collection into the postgres db in your environment
-7. (Make sure you activate venv) Either using the activate script or selecting interpretor through vscode
+4. import S3Config class and use that to configure s3 bucket.
+5. import gen_this_stac_collection from path to stac_factory
+6. When you call gen_this_stac_factory just pass in a object with api keys. and a instance of S3Config (gen_this_stac_collection(whc, s3_configuration))
+7. This will upsert the collection into the postgres db in your environment
+8. (Make sure you activate venv) Either using the activate script or selecting interpretor through vscode
 
 TODO:
 1. There is no way to reference naip-2016-nc-cir-1m/,  it only has a USGISID and that's not the id in the directory structure. None of the tiles match up to the index there, neither do any of the file names there. I'm not sure hat's going on there. I think that ones messed up.
