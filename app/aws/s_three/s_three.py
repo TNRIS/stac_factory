@@ -1,6 +1,6 @@
 from ctypes import Array
 import boto3
-from config import DATA_WH_CONF
+from app.config import DATA_WH_CONF
 from osgeo import gdal
 from typing import List, Dict
 from types_boto3_s3 import Client
@@ -11,7 +11,7 @@ from typing import List
 from pandas import DataFrame
 from pathlib import Path
 
-from config.PathTyping import DataWhPath, ItemPath, AssetPath
+from app.config.PathTyping import DataWhPath, ItemPath, AssetPath
 
 class Resource:
     """ 

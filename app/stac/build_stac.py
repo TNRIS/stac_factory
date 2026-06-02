@@ -1,6 +1,6 @@
 
-from aws.s_three import Collection as S3Collection, WarehouseClient, Resource
-from config import DATA_WH_CONF_HISTORIC, DATA_WH_CONF
+from app.aws.s_three import Collection as S3Collection, WarehouseClient, Resource
+from app.config import DATA_WH_CONF_HISTORIC, DATA_WH_CONF
 from .pystac_extension.TxCollection import TxCollection
 from pandas import DataFrame
 from multiprocessing import Process
@@ -72,7 +72,7 @@ def build_collection(wh_collection, s3_configuration):
             print(f"There are no items or assets accessible for the collection: {collection_root}")
 
     else:
-        tx_collection = pystac.read_file(f"/root/workspace/stac_factory/catalog/{collection_root}")        
+        tx_collection = pystac.read_file(f"/root/workspace/stac_factory/catalog/{collection_root}/collection.json")        
         return tx_collection
     
 

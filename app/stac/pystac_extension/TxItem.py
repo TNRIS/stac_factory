@@ -2,8 +2,8 @@ from typing import Any, List, assert_type
 from zipfile import ZipInfo
 import pystac, shapely, json
 from datetime import datetime
-from stac import log_info, log_exception, stream_handler
-from aws.s_three import WarehouseClient, Resource, Collection as S3Collection
+from app.stac import log_info, log_exception, stream_handler
+from app.aws.s_three import WarehouseClient, Resource, Collection as S3Collection
 from osgeo import gdal
 import pdal
 import geopandas as gpd

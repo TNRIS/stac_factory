@@ -1,5 +1,5 @@
-from stac.build_stac import gen_this_stac_collection
-from config.config import DATA_WH_CONF
+from app.stac.build_stac import gen_this_stac_collection
+from app.config.config import DATA_WH_CONF
 
 test_brown = {
     'id': 'stratmap-2024-50cm-archer-jack-lampasas-smith-counties',
