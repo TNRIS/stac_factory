@@ -13,6 +13,7 @@ from .TxExtent import TxExtent
 from app.stac import log_info, log_exception, stream_handler
 from pandas import DataFrame
 import time
+from app.config import PathTyping
 
 # Toggle this to True in order to rebuild the catalog from scratch.
 COMPLETE_REBUILD_FLAG = False
@@ -35,7 +36,7 @@ class TxCollection(pystac.Collection):
 
     def __init__(
         self,
-        root,
+        root: str | PathTyping.DataWhPath,
         s3_collection: S3Collection,
         data_wh_configuration,
         stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
@@ -59,10 +60,11 @@ class TxCollection(pystac.Collection):
             
         #Run the cross walk function.
         coll_api = None
-        if '/historic/' in self.wh_client.root:
-            coll_api = self.lore_xwalk(root)
-        elif '/general/' in self.wh_client.root:
-            coll_api = self.lcd_xwalk(root)
+        if(isinstance(data_wh_configuration, str)):
+            if '/historic/' in self.wh_client.root:
+                coll_api = self.lore_xwalk(root)
+            elif '/general/' in self.wh_client.root:
+                coll_api = self.lcd_xwalk(root)
         
         if(not coll_api or not len(coll_api['results'])):
             return None #Nothing found in xwalk file, or otherwise.

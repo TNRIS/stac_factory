@@ -1,8 +1,7 @@
 # Datahub S3 Crawler
-1. Create a config.py from config_example.py with test and prod s3 buckets. (I can send a configured file to TWDB employees)
-2. Change the username in the useradd line on Dockerfile to your local user. (Currently lh)
-3. create a config_db.sh with your postgresql db. (config_db_example.sh can be used as a base)
-4. put your API-CollectionID-CollectionName-Crosswalk.xlsx in the txgio_extension directory (May not be necessary for single collection generation)
+1. Change the username in the useradd line on Dockerfile to your local user. (Currently lh)
+2. create a config_db.sh with your postgresql db. (config_db_example.sh can be used as a base)
+3. put your API-CollectionID-CollectionName-Crosswalk.xlsx in the txgio_extension directory (May not be necessary for single collection generation)
 ## Dev Container Setup
 1. install remote - containers plugin @ https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers
 2. press cmd-p and type `>Dev Containers Reopen Folder Locally`
