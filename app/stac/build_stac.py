@@ -101,11 +101,11 @@ def gen_this_stac_collection(whc, s3_configuration):
     tx_collection = build_collection(whc, s3_configuration)
     collections = [tx_collection.to_dict()]
     dict_items = tx_collection.get_items()
-
+    
+    loader.load_collections(collections, insert_mode=Methods.upsert)
     items = []
     for i in dict_items:
         items.append(i.to_dict())
     loader.load_items(items, insert_mode=Methods.upsert)
 
 
-    loader.load_collections(collections, insert_mode=Methods.upsert)
