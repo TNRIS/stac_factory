@@ -1,6 +1,4 @@
 
-if(os.path.exists())
-
 from .pystac_extension.TxCollection import TxCollection
 from pandas import DataFrame
 from multiprocessing import Process
