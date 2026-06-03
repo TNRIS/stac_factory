@@ -1,10 +1,18 @@
 
-from app.aws.s_three import Collection as S3Collection, WarehouseClient, Resource
-from app.config import DATA_WH_CONF_HISTORIC, DATA_WH_CONF
+if(os.path.exists())
+
 from .pystac_extension.TxCollection import TxCollection
 from pandas import DataFrame
 from multiprocessing import Process
 import os
+from app.root import ROOT
+
+DATA_WH_CONF = None
+DATA_WH_CONF_HISTORIC = None
+
+if(os.path.exists(f"{ROOT}/config")):
+    from app.config import DATA_WH_CONF_HISTORIC, DATA_WH_CONF
+
 import pystac
 from pypgstac.load import Loader, Methods
 from pypgstac.db import PgstacDB
@@ -42,7 +50,7 @@ def build_collection(wh_collection, s3_configuration):
             s3_collection = S3Collection(items)
 
             tx_collection = None
-            tx_collection = TxCollection(collection_root, s3_collection, s3_configuration)
+            tx_collection = TxCollection(wh_collection, s3_collection, s3_configuration)
             for asset in s3_collection.paths.ASSETS:
                 if asset.type == "index":
                     passet = pystac.Asset(

@@ -1,6 +1,5 @@
 from ctypes import Array
 import boto3
-from app.config import DATA_WH_CONF
 from osgeo import gdal
 from typing import List, Dict
 from types_boto3_s3 import Client
