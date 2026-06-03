@@ -4,7 +4,7 @@ from app.root import ROOT
 
 DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None
-if(os.path.exists(f"{ROOT}/config")):
+if(os.path.exists(f"{ROOT}/config/config.py")):
     from app.config import DATA_WH_CONF_HISTORIC, DATA_WH_CONF
 test_brown = {
     'id': 'stratmap-2024-50cm-archer-jack-lampasas-smith-counties',

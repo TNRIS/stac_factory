@@ -8,7 +8,7 @@ from app.root import ROOT
 DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None
 
-if(os.path.exists(f"{ROOT}/config")):
+if(os.path.exists(f"{ROOT}/config/config.py")):
     from app.config import DATA_WH_CONF_HISTORIC, DATA_WH_CONF
 
 import pystac
