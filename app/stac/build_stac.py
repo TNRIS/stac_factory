@@ -15,6 +15,8 @@ import pystac
 from pypgstac.load import Loader, Methods
 from pypgstac.db import PgstacDB
 from pypgstac.load import Loader
+from app.aws.s_three import WarehouseClient
+from app.aws.s_three import Collection as S3Collection
 
 db = PgstacDB()
 loader = Loader(db)
@@ -105,9 +107,17 @@ def gen_this_stac_collection(whc, s3_configuration):
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
     tx_collection = build_collection(whc, s3_configuration)
+    print("Validating Collection")
+    tx_collection.validate()
+    print("Valid Collection")
+
+    print("Validating items")
+    tx_collection.validate_all()
+    print("Items Valid")
     collections = [tx_collection.to_dict()]
     dict_items = tx_collection.get_items()
     
+
     loader.load_collections(collections, insert_mode=Methods.upsert)
     items = []
     for i in dict_items:

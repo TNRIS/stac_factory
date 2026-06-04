@@ -13,7 +13,8 @@ from .TxExtent import TxExtent
 from app.stac import log_info, log_exception, stream_handler
 from pandas import DataFrame
 import time
-from app.config import PathTyping
+from app.config import PathTyping, DataWhPath
+from datetime import datetime
 
 # Toggle this to True in order to rebuild the catalog from scratch.
 COMPLETE_REBUILD_FLAG = False
@@ -36,7 +37,7 @@ class TxCollection(pystac.Collection):
 
     def __init__(
         self,
-        root: str | PathTyping.DataWhPath,
+        whcollection: str | PathTyping.DataWhPath,
         s3_collection: S3Collection,
         data_wh_configuration,
         stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
@@ -48,57 +49,134 @@ class TxCollection(pystac.Collection):
         :param stac_extensions: List of references to Stac Extensions. Default is fine for TxGIO. Override if needed.
         :type stac_extensions: list[str]
         """
-        self.root = root
+        self.whcollection = whcollection
         self.s3_collection = s3_collection
         self.wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
         self.data_wh_configuration = data_wh_configuration
+        self.stac_extensions = stac_extensions    
+        
+        if(isinstance(self.data_wh_configuration, str)):
+            return self.build_metadata_from_old_api()
+        else:
+            return self.build_metadata_from_input() #Nothing found in xwalk file, or otherwise.
+        
+    def build_metadata_from_input(self):
+        href = f"./catalog/{self.data_wh_configuration}/collection.json"
+        title = self.whcollection.get("title")
+        keywords = self.whcollection.get("keywords")
+        id = self.whcollection.get("id")
+        description = self.whcollection.get("description")
 
-        href = f"./catalog/{root}/collection.json"
-        print(f"Starting collection {root}")
+        index = self.get_tile_index_collectionwide_data(self.s3_collection.index_asset[0].path)
+        self.geo = shapely.from_geojson(json.dumps(index.get('boundary')))
+        spatial = pystac.SpatialExtent([self.geo.bounds[0], self.geo.bounds[1], self.geo.bounds[2], self.geo.bounds[3]])
+        iso_temporals = self.whcollection.get("extent").get("temporal").get("interval")
+        temporals: List[List[datetime]] = []
+        for temporal in iso_temporals:
+            temporals.append([datetime.fromisoformat(temporal[0]), datetime.fromisoformat(temporal[1])])
+            
+        temporal = pystac.TemporalExtent(temporals)
+        extent = pystac.Extent(spatial, temporal)
+
+        super(TxCollection, self).__init__(id=id, description=description, stac_extensions=self.stac_extensions, href=href, extent=extent, catalog_type = pystac.CatalogType.SELF_CONTAINED, title=title, keywords=keywords)
+        self.s3_key = self.whcollection.get("id")
+        self.extra_fields["txgio:s_three_bucket_key"] #Remove later
+        index = self.get_tile_index_collectionwide_data(self.s3_collection.index_asset[0].path)
+        
+        self.extra_fields["txgio:categories"]  = self.whcollection.get('txgio:categories')
+        self.extra_fields["txgio:publication_date"] = self.whcollection.get("publication_date")
+        if(self.whcollection.get("txgio:banner_text")):
+            self.extra_fields["txgio:banner_text"] = self.whcollection.get("txgio:banner_text")
+
+
+        if(self.whcollection.get("txgio:notes")):
+            self.extra_fields["txgio:notes"] = self.whcollection.get("txgio:notes")
+        if(self.whcollection.get("txgio:spatial_keywords")):
+            self.extra_fields["txgio:spatial_keywords"] = self.whcollection.get("txgio:spatial_keywords")
+
+        self.extra_fields["txgio:spatial_reference"] = self.whcollection.get("txgio:spatial_reference")
+        self.extra_fields["txgio:bands"] = self.whcollection.get("txgio:bands")
+        self.extra_fields["txgio:file_type"] = self.whcollection.get("txgio:file_type")
+        self.extra_fields["txgio:resolution"] = self.whcollection.get("txgio:resolution")
+
+        #Setup providers
+        txGIO = pystac.Provider(name="TxGIO", url="https://geographic.texas.gov/", description="Texas Geographic Information Office")
+        self.providers = [txGIO]
+
+        for provider in self.whcollection.get("providers"):
+            obj = pystac.Provider(provider.get("name"), provider.get("description"), provider.get("roles"), provider.get("url"))
+            self.providers.append(obj)
+
+        self.license = self.whcollection.get("license")
+        self.extra_fields["txgio:s_three_bucket_key"] = self.s3_key
+        self.extra_fields["txgio:citation"] = "PLACEHOLDER"
+        self.extra_fields["txgio:public"] = False
+        self.extra_fields["txgio:availability"] = "PLACEHOLDER"
+        self.extra_fields["txgio:last_modified"] = "PLACEHOLDER"
+
+        self.extra_fields["txgio:last_edited_by"] = "PLACEHOLDER"
+        self.extra_fields["txgio:template"] = "PLACEHOLDER"
+
+        # Tag counties
+        counties = gpd.read_file(f"{ROOT}/txgio_extension/county_boundaries.geojson")
+        counties_buffer = open(f"{ROOT}/txgio_extension/county_boundaries.geojson")
+        counties_dict = json.load(counties_buffer)
+        intersections = counties.intersects(self.geo)
+        spatial_tags = ""
+
+        for i in range(len(intersections)):
+            if(intersections[i]):
+                spatial_tags += f",{counties_dict['features'][i]['properties']['CNTY_NM']}"
+
+        self.extra_fields["txgio:spatial_keywords"] = spatial_tags[1:]
+
+        if(index):
+            self.extra_fields["txgio:geometry"] = index.get('boundary')
+
+        self.build_stac_items()
+
+
+    def build_metadata_from_old_api(self):
+        href = f"./catalog/{self.data_wh_configuration}/collection.json"
+        print(f"Starting collection {self.data_wh_configuration}")
+
+        #Run the cross walk function.
+        coll_api = ""
+        if(isinstance(self.data_wh_configuration, str)):
+            if '/historic/' in self.wh_client.root:
+                coll_api = self.lore_xwalk(self.data_wh_configuration)
+            elif '/general/' in self.wh_client.root:
+                coll_api = self.lcd_xwalk(self.data_wh_configuration)
+        self.geo = None
+        self.s3_key = self.data_wh_configuration
+        index = self.get_tile_index_collectionwide_data(self.s3_collection.index_asset[0].path)
+
         # Default extents. (Required for constructor)
         extents = TxExtent()
+        if(coll_api):
+            coll_api = coll_api["results"][0]
+            if index:
+                if ('VerDate' in index.get('dict')):
+                    extents.temporal = pystac.TemporalExtent([datetime.fromisoformat(index.get('dict').get('VerDate')), datetime.fromisoformat(index.get('dict').get('VerDate'))])
+                elif ('acquisition_date' in coll_api):
+                    extents.temporal = pystac.TemporalExtent([datetime.fromisoformat(coll_api.get('acquisition_date')), datetime.fromisoformat(coll_api.get('acquisition_date'))])
+                else:
+                    extents.temporal = pystac.TemporalExtent([datetime.fromisoformat('0001-01-01'), datetime.fromisoformat('0001-01-01')])
+                self.geo = shapely.from_geojson(json.dumps(index.get('boundary')))
+                extents.spatial = pystac.SpatialExtent([self.geo.bounds[0], self.geo.bounds[1], self.geo.bounds[2], self.geo.bounds[3]])
             
-        #Run the cross walk function.
-        coll_api = None
-        if(isinstance(data_wh_configuration, str)):
-            if '/historic/' in self.wh_client.root:
-                coll_api = self.lore_xwalk(root)
-            elif '/general/' in self.wh_client.root:
-                coll_api = self.lcd_xwalk(root)
-        
-        if(not coll_api or not len(coll_api['results'])):
-            return None #Nothing found in xwalk file, or otherwise.
-        
-        self.geo = None
-        self.s3_key = root
-        index = self.get_tile_index_collectionwide_data(s3_collection.index_asset[0].path)
+            description = coll_api.get("description")
+            if not description:
+                description = coll_api.get("about")
+            super(TxCollection, self).__init__(id=whcollection, description=description, stac_extensions=self.stac_extensions, href=href, extent=extents, catalog_type = pystac.CatalogType.SELF_CONTAINED)
+            if(index):
+                self.extra_fields["txgio:geometry"] = index.get('boundary')
 
-        # Get max date
-        # latest_date = pd.to_datetime('19700101') # Default to start of 1970
-        # for stamp in index.get('dict').get('SrcImgDate').values():
-        #     if(latest_date < pd.to_datetime(stamp)):
-        #         latest_date = pd.to_datetime(stamp)
-        coll_api = coll_api["results"][0]
-        if index:
-            if ('VerDate' in index.get('dict')):
-                extents.temporal = pystac.TemporalExtent([datetime.fromisoformat(index.get('dict').get('VerDate')), datetime.fromisoformat(index.get('dict').get('VerDate'))])
-            elif ('acquisition_date' in coll_api):
-                extents.temporal = pystac.TemporalExtent([datetime.fromisoformat(coll_api.get('acquisition_date')), datetime.fromisoformat(coll_api.get('acquisition_date'))])
-            else:
-                extents.temporal = pystac.TemporalExtent([datetime.fromisoformat('0001-01-01'), datetime.fromisoformat('0001-01-01')])
-            self.geo = shapely.from_geojson(json.dumps(index.get('convex_hull_polygon')))
-            extents.spatial = pystac.SpatialExtent([self.geo.bounds[0], self.geo.bounds[1], self.geo.bounds[2], self.geo.bounds[3]])
-            
-        description = coll_api.get("description")
-        if not description:
-            description = coll_api.get("about")
-        super(TxCollection, self).__init__(id=root, description=description, stac_extensions=stac_extensions, href=href, extent=extents, catalog_type = pystac.CatalogType.SELF_CONTAINED)
-        if(index):
-            self.extra_fields["txgio:geometry"] = index.get('convex_hull_polygon')
-
-        self.__set_collection_meta_data(coll_api)
-        self.build_stac_items()
-   
+            self.__set_collection_meta_data(coll_api)
+            self.build_stac_items()
+        else:
+            log_info(f"There is no api entry found for {whcollection}")
+    
     def lcd_xwalk(self, name):
         coll_api_url = f'{self.settings["API_URL"]}/api/v1/collections?s_three_key={name}'
         coll_api = requests.get(coll_api_url).json()
@@ -205,8 +283,8 @@ class TxCollection(pystac.Collection):
         self.extra_fields["txgio:public"] = coll_api["public"]
         self.extra_fields["txgio:availability"] = coll_api["availability"] == "Download"
         self.extra_fields["txgio:banner_text"] = "PLACEHOLDER"
-        self.extra_fields["txgio:last_modified"] = "1970-01-01"
-        self.extra_fields["txgio:last_edited_by"] = "Placeholder"
+        self.extra_fields["txgio:last_modified"] = str(datetime.today())
+        self.extra_fields["txgio:last_edited_by"] = "Initial create"
         self.extra_fields["txgio:template"] = coll_api["template"]
 
         # Tag counties
@@ -215,8 +293,6 @@ class TxCollection(pystac.Collection):
         counties_dict = json.load(counties_buffer)
         intersections = counties.intersects(self.geo)
         spatial_tags = ""
-
-        start = time.time()
 
         for i in range(len(intersections)):
             if(intersections[i]):
@@ -233,10 +309,6 @@ class TxCollection(pystac.Collection):
             if(intersections2[i]):
                 spatial_tags += f",{cities_dict['objects']['TX_Cities']['geometries'][i]['properties']['name']}"
         
-        end = time.time()
-
-        print(f"intersections took {end - start} seconds.")
-
         self.license = coll_api["license_abbreviation"]
         self.license = coll_api["license_abbreviation"] if coll_api["license_abbreviation"] else "other"
 
@@ -370,7 +442,7 @@ class TxCollection(pystac.Collection):
  
                 tile_index = {}
                 tile_index['dict'] = gdal_path.GetMetadata_Dict()
-                tile_index['convex_hull_polygon'] = geom
+                tile_index['boundary'] = geom
 
                 return tile_index
             else:
@@ -380,7 +452,7 @@ class TxCollection(pystac.Collection):
                 union = self.panda_layer.union_all()
                 tile_index = {}
                 tile_index['dict'] = self.panda_layer.to_dict()
-                tile_index['convex_hull_polygon'] = json.loads(shapely.to_geojson(union.convex_hull))
+                tile_index['boundary'] = json.loads(shapely.to_geojson(union.boundary))
 
                 return tile_index
         except Exception as e:
