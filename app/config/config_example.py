@@ -7,24 +7,12 @@ class S3Config:
     def __init__(self,
                 BUCKET_URL,
                 BUCKET = "",
-                PREFIX = "",
-                LCD_COLLECTION_PREFIX = "",
-                LORE_COLLECTION_PREFIX = "",
-                RESOURCES_KEY = "",
-                ROOT = "",
                 ARCHIVE_EXTENSION = "",
-                COLLECTION_ROOT = "",
-                DATA_WH_PATH : DataWhPath | None = None):
+                COLLECTION_ROOT = ""):
         self.BUCKET_URL = BUCKET_URL
         self.BUCKET = BUCKET
-        self.PREFIX = PREFIX
-        self.LCD_COLLECTION_PREFIX = LCD_COLLECTION_PREFIX
-        self.LORE_COLLECTION_PREFIX = LORE_COLLECTION_PREFIX
-        self.RESOURCES_KEY = RESOURCES_KEY
-        self.ROOT = ROOT
         self.ARCHIVE_EXTENSION = ARCHIVE_EXTENSION
         self.COLLECTION_ROOT = COLLECTION_ROOT
-        self.DATA_WH_PATH = DATA_WH_PATH
 
 class GeosConfig:
     VECTOR_EXTS = ["shp", "parquet", "pq", "gdb", "fgb", "fgdb"]
@@ -34,35 +22,17 @@ class GeosConfig:
 DATA_WH_CONF = S3Config(
     BUCKET_URL = "",
     BUCKET = "",
-    PREFIX = "",
-    LCD_COLLECTION_PREFIX = "",
-    LORE_COLLECTION_PREFIX = "",
-    RESOURCES_KEY = "",
-    ROOT='',
     ARCHIVE_EXTENSION="",
-    COLLECTION_ROOT="",
-    DATA_WH_PATH=None)
+    COLLECTION_ROOT="")
 
 DATA_WH_CONF_PROD = S3Config(
     BUCKET_URL = "",
     BUCKET = "",
-    PREFIX = "",
-    LCD_COLLECTION_PREFIX = "",
-    LORE_COLLECTION_PREFIX = "",
-    RESOURCES_KEY = "",
-    ROOT='',
     ARCHIVE_EXTENSION="",
-    COLLECTION_ROOT="",
-    DATA_WH_PATH=None)
+    COLLECTION_ROOT="")
 
 DATA_WH_CONF_HISTORIC = S3Config(
     BUCKET_URL = "",
     BUCKET = "",
-    PREFIX = "",
-    LCD_COLLECTION_PREFIX = "",
-    LORE_COLLECTION_PREFIX = "",
-    RESOURCES_KEY = "",
-    ROOT='',
     ARCHIVE_EXTENSION="",
-    COLLECTION_ROOT="",
-    DATA_WH_PATH=None)
+    COLLECTION_ROOT="")
