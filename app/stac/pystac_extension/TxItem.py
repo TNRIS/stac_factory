@@ -195,9 +195,9 @@ class TxItem(pystac.Item):
         try:
             panda_layer = gpd.GeoDataFrame.from_file(vsi_path).to_crs("EPSG:4326")
             union = panda_layer.union_all()
-            convex_hull_polygon = json.loads(shapely.to_geojson(union.convex_hull))
+            boundary = json.loads(shapely.to_geojson(union.convex_hull))
 
-            return [convex_hull_polygon, panda_layer.total_bounds.tolist()]
+            return [boundary, panda_layer.total_bounds.tolist()]
         except Exception as e:
             log_info(f"Can't find the file: {vsi_path}")
             return None
@@ -228,9 +228,9 @@ class TxItem(pystac.Item):
         loc = self.wh_client.get_filename_path(rsc.path)
         panda_layer = gpd.GeoDataFrame.from_file(f'/vsizip/vsicurl/{loc}/{gdb_name}')
         union = panda_layer.union_all()
-        convex_hull_polygon = json.loads(shapely.to_geojson(union.convex_hull))
+        boundary = json.loads(shapely.to_geojson(union.convex_hull))
 
-        return [convex_hull_polygon, panda_layer.total_bounds.tolist()]
+        return [boundary, panda_layer.total_bounds.tolist()]
 
     def build_laz_stac(self, rsc: Resource):
         """
