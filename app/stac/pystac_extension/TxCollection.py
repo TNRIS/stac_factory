@@ -80,7 +80,7 @@ class TxCollection(pystac.Collection):
 
         super(TxCollection, self).__init__(id=id, description=description, stac_extensions=self.stac_extensions, href=href, extent=extent, catalog_type = pystac.CatalogType.SELF_CONTAINED, title=title, keywords=keywords)
         self.s3_key = self.whcollection.get("id")
-        self.extra_fields["txgio:s_three_bucket_key"] #Remove later
+        self.extra_fields["txgio:s_three_bucket_key"] = self.s3_key #Remove later
         index = self.get_tile_index_collectionwide_data(self.s3_collection.index_asset[0].path)
         
         self.extra_fields["txgio:categories"]  = self.whcollection.get('txgio:categories')
@@ -111,8 +111,9 @@ class TxCollection(pystac.Collection):
         self.extra_fields["txgio:s_three_bucket_key"] = self.s3_key
         self.extra_fields["txgio:citation"] = "PLACEHOLDER"
         self.extra_fields["txgio:public"] = False
-        self.extra_fields["txgio:availability"] = "PLACEHOLDER"
-        self.extra_fields["txgio:last_modified"] = "PLACEHOLDER"
+        self.extra_fields["txgio:availability"] = False
+        self.extra_fields["txgio:last_modified"] = str(datetime.today())
+
 
         self.extra_fields["txgio:last_edited_by"] = "PLACEHOLDER"
         self.extra_fields["txgio:template"] = "PLACEHOLDER"

@@ -28,8 +28,8 @@ if(os.path.exists(f"{ROOT}/config/config.py")):
         'txgio:categories': ["Imagery", "Historic Imagery", "Elevation"],
         'txgio:notes': 'provided txgio:notes',
         'txgio:spatial_keywords': 'provided txgio:spatial_keywords',
-        'txgio:spatial_reference': 'provided txgio:spatial_reference',
-        'txgio:bands': 'provided txgio:bands',
+        'txgio:spatial_reference': ['provided txgio:spatial_reference', 'thing1', 'thing2'],
+        'txgio:bands': ['provided txgio:bands', 'thing1', 'thing2'],
         'txgio:file_type': 'provided txgio:file_type',
         'txgio:resolution': 'provided txgio:resolution',
         'providers': [
