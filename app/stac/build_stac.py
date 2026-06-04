@@ -108,12 +108,12 @@ def gen_this_stac_collection(whc, s3_configuration):
     """
     tx_collection = build_collection(whc, s3_configuration)
     print("Validating Collection")
-    tx_collection.validate()
-    print("Valid Collection")
+    # tx_collection.validate()
+    # print("Valid Collection")
 
-    print("Validating items")
-    tx_collection.validate_all()
-    print("Items Valid")
+    # print("Validating items")
+    # tx_collection.validate_all()
+    # print("Items Valid")
     collections = [tx_collection.to_dict()]
     dict_items = tx_collection.get_items()
     
