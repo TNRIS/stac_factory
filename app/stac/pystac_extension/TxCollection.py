@@ -41,7 +41,8 @@ class TxCollection(pystac.Collection):
         s3_collection: S3Collection,
         data_wh_configuration,
         stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
-                                      "https://stac-extensions.github.io/file/v2.1.0/schema.json"]):
+                                      "https://stac-extensions.github.io/file/v2.1.0/schema.json"],
+        rebuild_flag: bool = False):
         """
         Docstring for __init__
         
@@ -53,7 +54,8 @@ class TxCollection(pystac.Collection):
         self.s3_collection = s3_collection
         self.wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
         self.data_wh_configuration = data_wh_configuration
-        self.stac_extensions = stac_extensions    
+        self.stac_extensions = stac_extensions   
+        COMPLETE_REBUILD_FLAG = rebuild_flag 
         
         if(isinstance(self.data_wh_configuration, str)):
             return self.build_metadata_from_old_api()

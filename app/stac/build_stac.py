@@ -28,7 +28,7 @@ class TestException(Exception):
     pass
 
 # Toggle this to True in order to rebuild the catalog from scratch.
-SKIP_KNOWN_COLLECTIONS_FLAG = True # Set this to True.
+SKIP_KNOWN_COLLECTIONS_FLAG: bool = True # Set this to True.
 
 wh_client: WarehouseClient
 def build_collection(wh_collection, s3_configuration):
@@ -47,7 +47,7 @@ def build_collection(wh_collection, s3_configuration):
             s3_collection = S3Collection(items)
 
             tx_collection = None
-            tx_collection = TxCollection(wh_collection, s3_collection, s3_configuration)
+            tx_collection = TxCollection(wh_collection, s3_collection, s3_configuration, rebuild_flag=SKIP_KNOWN_COLLECTIONS_FLAG)
             for asset in s3_collection.paths.ASSETS:
                 if asset.type == "index":
                     passet = pystac.Asset(
