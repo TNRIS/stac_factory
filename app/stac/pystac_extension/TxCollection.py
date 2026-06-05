@@ -229,7 +229,12 @@ class TxCollection(pystac.Collection):
         if(FILE_NOT_FOUND or REBUILD_FLAG):
             tx_item = None
             try:
-                tx_item = TxItem(resources, self.extra_fields.get("txgio:spatial_reference"), self.id, self.tile, self.resolution, self.data_wh_configuration)
+                tx_item = TxItem(resources,
+                                 self.extra_fields.get("txgio:spatial_reference"),
+                                 self.id,
+                                 self.tile,
+                                 self.resolution,
+                                 self.data_wh_configuration)
             except Exception as e:
                 print(e)
                 return None

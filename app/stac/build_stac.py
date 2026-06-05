@@ -103,6 +103,7 @@ def gen_this_stac_collection(whc, s3_configuration):
     """
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
+    SKIP_KNOWN_COLLECTIONS_FLAG = False
     tx_collection = build_collection(whc, s3_configuration)
     print("Validating Collection")
     # tx_collection.validate()
