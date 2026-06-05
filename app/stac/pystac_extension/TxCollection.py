@@ -13,7 +13,7 @@ from .TxExtent import TxExtent
 from app.stac import log_info, log_exception, stream_handler
 from pandas import DataFrame
 import time
-from app.config import PathTyping, DataWhPath
+from app.config.PathTyping import DataWhPath
 from datetime import datetime
 
 # Toggle this to True in order to rebuild the catalog from scratch.
@@ -37,7 +37,7 @@ class TxCollection(pystac.Collection):
 
     def __init__(
         self,
-        whcollection: str | PathTyping.DataWhPath,
+        whcollection: str | DataWhPath,
         s3_collection: S3Collection,
         data_wh_configuration,
         stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
