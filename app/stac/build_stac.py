@@ -8,9 +8,6 @@ from app.root import ROOT
 DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None
 
-if(os.path.exists(f"{ROOT}/config/config.py")):
-    from app.config import DATA_WH_CONF_HISTORIC, DATA_WH_CONF
-
 import pystac
 from pypgstac.load import Loader, Methods
 from pypgstac.db import PgstacDB
@@ -64,7 +61,7 @@ def build_collection(wh_collection, s3_configuration):
                     tx_collection.assets['tile_index_url'] = passet
                 else:
                     passet = pystac.Asset(
-                        href=f"{DATA_WH_CONF.BUCKET_URL}{asset.path}",
+                        href=f"{s3_configuration.BUCKET_URL}{asset.path}",
                         media_type=asset.type,
                         extra_fields={
                             "file:size":asset.size,
