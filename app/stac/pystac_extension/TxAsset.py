@@ -2,7 +2,7 @@ import pystac
 
 class TxAsset(pystac.Asset):
     # def __init__(self, file_type: str, rsc_path: str, title: str):
-    def __init__(self, resource, collection_name: str, resolution: str | None, extra_fields={}):
+    def __init__(self, resource, collection_name: str, resolution: str | None, roles: list[str] | None = None, extra_fields={}):
         """
         Docstring for assets_builder
         
@@ -49,6 +49,7 @@ class TxAsset(pystac.Asset):
             title=collection_name,
             description= f'{resource.type} at resolution {resolution} for {resource.index} of {collection_name}',
             media_type=f"{iama_type}",
-            extra_fields=extra_fields)
+            extra_fields=extra_fields,
+            roles=roles)
         self.stac_assets[collection_name] = self
         self.stac_assets['readable_name'] = resource.type

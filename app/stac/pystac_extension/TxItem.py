@@ -7,9 +7,11 @@ from app.aws.s_three import WarehouseClient, Resource, Collection as S3Collectio
 from osgeo import gdal
 import pdal
 import geopandas as gpd
-
-import remotezip
+from app.stac.pystac_extension.file_parsing import build_roles_for
+from app.root.root import ROOT
+import remotezip, os
 from .TxAsset import TxAsset
+from shapely.geometry import mapping
 
 class ItemException(Exception):
     pass
@@ -20,7 +22,7 @@ class TxItem(pystac.Item):
     Override pystacs Item
     """
 
-    def __init__(self, resources: List[Resource], spatial_reference: str, collection_name: str, preprocessed_geometry: dict | None, resolution: str | None, data_wh_configuration):
+    def __init__(self, resources: List[Resource], spatial_reference:str | list[str] | None, collection_name: str, preprocessed_geometry: dict | None, resolution: str | None, data_wh_configuration):
         """
         TxItem Constructor
         
@@ -30,6 +32,10 @@ class TxItem(pystac.Item):
         :param spatial_reference: Description
         :param collection_name: Description
         """
+        if(isinstance(spatial_reference, list)):
+                spatial_reference = spatial_reference[0]
+        elif(not spatial_reference):
+            spatial_reference = "EPSG:4326"
         self.spatial_reference = spatial_reference
         self.wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
         self.stac_id = f"{collection_name}_{resources[0].index}"
@@ -56,23 +62,48 @@ class TxItem(pystac.Item):
                 tile_name_map = preprocessed_geometry['TileID'].items()
             elif('CNTY_FIPS' in preprocessed_geometry):
                 tile_name_map = preprocessed_geometry['CNTY_FIPS'].items()
+            elif('STATE_FIPS' in preprocessed_geometry):
+                tile_name_map = preprocessed_geometry['STATE_FIPS'].items()
+            elif('FlightDate' in preprocessed_geometry):
+                tile_name_map = preprocessed_geometry['FlightDate'].items()
+
+            if (tile_name_map == {}):
+                log_info("Can't find a tile id")
             index = None
             for key, val in tile_name_map:
                 if str(val) == tile_id:
                     index = key
 
             if(index == None): # 0 is a valid index so check for None specifically.
-                raise Exception("No index")
+                raise Exception(f"No index for TxItem with tile_id: {tile_id} in {self.stac_id}")
             geometries = []
             s_geom = preprocessed_geometry['geometry'][index]
-            geometries.append(json.loads(shapely.to_geojson(s_geom)))
+            simplify = s_geom.simplify(tolerance=0.0001, preserve_topology=True) #Defaults to Douglas Peucker, recommended in api for the_geom.
+            geometries.append(simplify)
+            TEST_EXPORT_ITEM = True # Change this to True if you want to have geojson to test with.
+            if( TEST_EXPORT_ITEM):
+                try:
+                    path = f"{ROOT}/testgeojson/{self.stac_id.split('_')[0]}/items"
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    with open(f"{path}/{self.stac_id}_testgeom.geojson", "w") as f:
+                        f.write(shapely.to_geojson(simplify))
+                except:
+                    log_info("Can't write a test file skipping.")
             geometries.append(preprocessed_geometry['geometry'][index].bounds)
         else:
             geometries = self.get_geom_by_priority(resources)
 
         for resource in resources:
             if(resource.index == tile_id):
+                roles = build_roles_for(resource)
+                rz = roles['roles'][1]
+                a = rz['description']
+                b = rz['media_type']
+                c = rz['usage']
+
                 asset = TxAsset(resource, collection_name, resolution,
+                                roles=[roles['ext'],b,c],
                                 extra_fields={
                                                 "file:size":resource.size,
                                                 "file:local_path":resource.path
@@ -80,7 +111,7 @@ class TxItem(pystac.Item):
                 # if not hasattr(asset,"set_owner"):
                 #     asset.set_owner = pystac.Asset.set_owner
                 # asset.set_owner = pystac.Asset.set_owner
-                assets[resource.fname] = asset
+                assets[f"{collection_name}-{roles["ext"].split(".")[-1]}"] = asset
             # extra_fields={
             #         "file:checksum":resource.etag.split("\"")[1],
             #         "file:size":resource.size,
@@ -93,10 +124,9 @@ class TxItem(pystac.Item):
 
         geometry = geometries[0]
         bbox = geometries[1]
-        
         super(TxItem, self).__init__(id=self.stac_id,
-            geometry = geometry,
-            bbox=bbox,
+            geometry = mapping(geometry),
+            bbox=list(bbox),
             datetime=datetime.utcnow(),
             properties={},
             stac_extensions=["https://stac-extensions.github.io/file/v2.1.0/schema.json"],
@@ -195,9 +225,9 @@ class TxItem(pystac.Item):
         try:
             panda_layer = gpd.GeoDataFrame.from_file(vsi_path).to_crs("EPSG:4326")
             union = panda_layer.union_all()
-            boundary = json.loads(shapely.to_geojson(union.convex_hull))
+            outline = json.loads(shapely.to_geojson(union.convex_hull))
 
-            return [boundary, panda_layer.total_bounds.tolist()]
+            return [outline, panda_layer.total_bounds.tolist()]
         except Exception as e:
             log_info(f"Can't find the file: {vsi_path}")
             return None
@@ -228,9 +258,9 @@ class TxItem(pystac.Item):
         loc = self.wh_client.get_filename_path(rsc.path)
         panda_layer = gpd.GeoDataFrame.from_file(f'/vsizip/vsicurl/{loc}/{gdb_name}')
         union = panda_layer.union_all()
-        boundary = json.loads(shapely.to_geojson(union.convex_hull))
+        outline = json.loads(shapely.to_geojson(union.convex_hull))
 
-        return [boundary, panda_layer.total_bounds.tolist()]
+        return [outline, panda_layer.total_bounds.tolist()]
 
     def build_laz_stac(self, rsc: Resource):
         """
@@ -242,13 +272,10 @@ class TxItem(pystac.Item):
         if(files and len(files) > 1):
             vsi_path = f"{vsi_path}/{[file for file in files if file.endswith('.laz')][0]}"
         
-        if(not self.spatial_reference):
-            self.spatial_reference = "4326"
-        
         pipeline = pdal.Reader.las(filename=vsi_path, default_srs=f"EPSG:{self.spatial_reference}") | pdal.Filter.stats()
         pipeline.execute()
         stats = pipeline.metadata.get('metadata').get('filters.stats')
-        bounds = stats.get("bbox").get('EPSG:4326').get('boundary')
+        bounds = stats.get("bbox").get('EPSG:4326').get('outline')
         bbox = pipeline.metadata['metadata']['filters.stats']['bbox'][f"EPSG:4326"]['bbox']
         bbox = [
             bbox['maxx'],
