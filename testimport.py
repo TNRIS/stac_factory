@@ -7,7 +7,7 @@ DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None
 
 test_brown = {
-    'id': 'stratmap-2019-50cm-brown-county',
+    'id': 'stratmap-2019-address-points',
     'title': 'provided_title',
     'txgio:publication_date': 'provided publication_date',
     'txgio:banner_text': 'provided banner_text',
@@ -52,7 +52,7 @@ test_brown = {
 whconf = S3Config(
     BUCKET_URL = "http://test-gio-data-warehouse.s3-website-us-east-1.amazonaws.com/",
     BUCKET = "test-gio-data-warehouse",
-    ROOT='data/cataloged/current/collections/',
+    ROOT='data/cataloged/general/collections/',
     ARCHIVE_EXTENSION=".zip",
     COLLECTION_ROOT="/")
 
