@@ -28,11 +28,7 @@ class Resource:
         self.ChecksumAlgorithm = path.ChecksumAlgorithm
         self.etag = path.ETag
         self.size = path.Size
-
         self.type = Path(self.path).parts[-2]
-
-        if(self.type == "index"):
-            print(f"Index type for {self.collection_name}")
         self.filename = os.path.splitext(os.path.split(self.path)[1])[0]
 
     # def get_contents(self):
@@ -161,7 +157,6 @@ class BucketClient:
         """
             Return a list of strings representing directories in a s3 bucket provided by bucket.
         """             
-        print(f"S3 Scanning: {prefix}")           
         kwargs = {
             "Bucket": self.name,
             "Prefix": prefix
@@ -182,8 +177,6 @@ class BucketClient:
         return dirs
     
     def upload(self, key, body):
-        print("Here")
-
         self.client.put_object(Bucket=self.name, Key=key, Body=body)
 
 class WarehouseClient(BucketClient):
