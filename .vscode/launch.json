@@ -11,7 +11,16 @@
             "program": "testimport.py",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/.venv/bin/python",
-            "cwd": "/root/workspace/"
+            "cwd": "/stac_generator"
+        },
+        {
+            "name": "debug testbulk",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "testbulk.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "cwd": "/stac_generator"
         }
     ]
 }

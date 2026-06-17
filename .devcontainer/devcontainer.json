@@ -15,29 +15,14 @@
             "type": "bind"
         }
     ],
-    "workspaceMount": "source=${localWorkspaceFolder},target=/root/workspace,type=bind",
-    "workspaceFolder": "/root/workspace",
-    "postCreateCommand": "dnf install python && dnf install pdal && dnf install gdal && uv pip install -r pyproject.toml",
-    //echo conda activate pdal >> ~/.bashrc && conda run -n pdal
-    // Features to add to the dev container. More info: https://containers.dev/features.
-    // "features": {},
-   // a
-    // Configure tool-specific properties.
+    "workspaceMount": "source=${localWorkspaceFolder},target=/stac_generator,type=bind",
+    "workspaceFolder": "/stac_generator",
     "customizations": {
         // Configure properties specific to VS Code.
         "vscode": {
             "settings": {},
             "extensions": ["ms-python.python"]
         }
-    }
-    // "remoteUser": "${localEnv:USER}"
-    
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    // "forwardPorts": [],
-
-    // Use 'postCreateCommand' to run commands after the container is created.
-    // "postCreateCommand": "rustc --version",
-
-    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-    // "remoteUser": "root"
+    },
+    "updateRemoteUserUID": true
 }

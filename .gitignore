@@ -3,4 +3,7 @@ config.py
 config_db.sh
 stac.log
 __pycache__
-API-CollectionID-CollectionName-Crosswalk.xlsx
+collections
+API-CollectionID-CollectionName-Crosswalk*
+*_testgeom.geojson
+items
