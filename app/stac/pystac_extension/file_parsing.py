@@ -29,15 +29,18 @@ file_types: dict[str, TypeDescriptor] = {
     '.jpg.ovr': TypeDescriptor("Auxilary overview of jpen files", "application/octet-stream", "metadata"),
     '.aux.xml': TypeDescriptor("Auxilary metadata in xml format", "application/xml", "metadata"),
     '.tif.xml': TypeDescriptor("Metadata in xml format for .tif files", "application/xml", "metadata"),
-
+    '.jp2.xml': TypeDescriptor("Metadata in xml format for .jp2 files", "application/xml", "metadata"),
+    '.sid.aux.xml': TypeDescriptor("Auxilary metadata in xml format for .sid files", "application/xml", "metadata"),
+    '.sid.xml': TypeDescriptor("Metadata in xml format for .sid files", "application/xml", "metadata"),
+    
+    '.sid': TypeDescriptor("MrSID raster image", "image/x-mrsid", "data"),
     '.zip': TypeDescriptor("Zip archive", "application/zip", "data"),
     '.tif': TypeDescriptor("Tif image", "image/tiff", "data"),
     '.laz': TypeDescriptor("Zipped Lidar", "application/vnd.las", "data"),
     '.img': TypeDescriptor("Raster Image file", "image/x-img", "data"),
     '.jp2': TypeDescriptor("Raster Image file", "image/jp2", "data"),
     '.tif': TypeDescriptor("GeoTIFF raster image", "image/tiff", "data"),
-    '.jpg': TypeDescriptor("JPEG raster image", "image/jpeg", "data")
-}
+    '.jpg': TypeDescriptor("JPEG raster image", "image/jpeg", "data")}
 
 def build_roles_for(resource: ItemPath):
     if resource.ext in file_types.keys():
