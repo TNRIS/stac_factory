@@ -20,10 +20,48 @@ class TxOldCollection(TxCollection):
         stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
                                       "https://stac-extensions.github.io/file/v2.1.0/schema.json"]):
         
-        super(TxOldCollection, self).__init__(data_wh_configuration, s3_collection, collection_name, stac_extensions)
-        self.build_stac_items()
+        
+        try:
+            #Run the cross walk function.
+            coll_api = self.lcd_xwalk(collection_name)
+            
+            if(not len(s3_collection.index_asset)):
+                print(f"{collection_name} index asset is empty")
+                return
+            
 
-        return self.build_metadata_from_old_api()
+            # Default extents. (Required for constructor)
+            if(coll_api):
+                temporal: pystac.TemporalExtent = pystac.TemporalExtent([datetime.fromisoformat('0001-01-01'), datetime.fromisoformat('0001-01-01')])
+                coll_api = coll_api["results"][0]
+                
+                if ('acquisition_date' in coll_api):
+                    temporal = pystac.TemporalExtent([datetime.fromisoformat(coll_api.get('acquisition_date')), datetime.fromisoformat(coll_api.get('acquisition_date'))])
+                else:
+                    log_info(f"No temporal extent available for {collection_name}")
+                
+                description = coll_api.get("description")
+                if not description:
+                    description = coll_api.get("about")
+
+                super().__init__(
+                    data_wh_configuration=data_wh_configuration,
+                    s3_collection=s3_collection,
+                    collection_name=collection_name,
+                    stac_extensions=stac_extensions,
+                    textent=temporal,
+                    description=description
+                )
+                self.__set_collection_meta_data(coll_api)
+                self.build_stac_items()
+            else:
+                log_info(f"There is no api entry found for {collection_name}")
+
+        except Exception as e:
+            log_info(f"Cannot build metadata from api. {collection_name}")
+            log_exception(e)
+            return None
+    
 
     def lcd_xwalk(self, name):
         coll_api_url = f'{self.settings["API_URL"]}/api/v1/collections?s_three_key={name}'
@@ -32,12 +70,17 @@ class TxOldCollection(TxCollection):
         if(len(coll_api['results'])):
             return coll_api
         else:
-            cross_walk = pandas.read_excel(f'{ROOT}/txgio_extension/API-CollectionID-CollectionName-Crosswalk.xlsx', ["LCD"])["LCD"]
+            cross_walk = pandas.read_excel(f'{ROOT}/txgio_extension/API-CollectionID-CollectionName-Crosswalk2.xlsx', ["LCD"])["LCD"]
             
             for i in cross_walk.itertuples():
-                if i[4] == name:
+                
+                if i._5 == name or i._4 == name:
                     coll_api_url = f'{self.settings["API_URL"]}/api/v1/collections?collection_id={i[3]}'
-                    api = requests.get(coll_api_url).json()
+                    coll_api = requests.get(coll_api_url).json()
+                    if(len(coll_api['results'])):
+                        return coll_api
+                    else:
+                        log_info(f"Cannot find api results for {coll_api_url}")
             
     def lore_xwalk(self, name):
         coll_api_url = ""
@@ -49,57 +92,13 @@ class TxOldCollection(TxCollection):
         except Exception as e:
             print(e)
         
-        cross_walk = pandas.read_excel('txgio_extension/API-CollectionID-CollectionName-Crosswalk.xlsx', ["LORE"])["LORE"]
+        cross_walk = pandas.read_excel('txgio_extension/API-CollectionID-CollectionName-Crosswalk2.xlsx', ["LORE"])["LORE"]
         for i in cross_walk.itertuples():
             if i[8] == name:
                 coll_api_url = f'{self.settings["API_URL"]}/api/v1/historical/collections?collection_id={i.collection_id}'
                 return requests.get(coll_api_url).json()
 
-    def build_metadata_from_old_api(self):
-        try:
-            #Run the cross walk function.
-            coll_api = ""
-            if(isinstance(self.collection_name, str)):
-                if '/historic/' in self.wh_client.root:
-                    coll_api = self.lore_xwalk(self.collection_name)
-                elif '/general/' in self.wh_client.root:
-                    coll_api = self.lcd_xwalk(self.collection_name)
-            
-            self.s3_key = self.collection_name
-            if(not len(self.s3_collection.index_asset)):
-                print(f"{self.s3_key} index asset is empty")
-                return
-            
-
-            # Default extents. (Required for constructor)
-            if(coll_api):
-                temporal: pystac.TemporalExtent = pystac.TemporalExtent([datetime.fromisoformat('0001-01-01'), datetime.fromisoformat('0001-01-01')])
-                coll_api = coll_api["results"][0]
-                if self.index:
-                    if ('VerDate' in self.index.dict):
-                        temporal = pystac.TemporalExtent([datetime.fromisoformat(self.index.dict.get("VerDate")), datetime.fromisoformat(self.index.dict.get("VerDate"))])
-                    elif ('acquisition_date' in coll_api):
-                        temporal = pystac.TemporalExtent([datetime.fromisoformat(coll_api.get('acquisition_date')), datetime.fromisoformat(coll_api.get('acquisition_date'))])
-                    else:
-                        log_info(f"No temporal extent available for {self.collection_name}")
-
-                
-                description = coll_api.get("description")
-                if not description:
-                    description = coll_api.get("about")
-
-                extents = pystac.Extent(self.spatial_extent, temporal)
-                super(TxCollection, self).__init__(id=self.collection_name, description=description, stac_extensions=self.stac_extensions, href=self.href, extent=extents, catalog_type = pystac.CatalogType.SELF_CONTAINED)
-                
-                self.__set_collection_meta_data(coll_api)
-            else:
-                log_info(f"There is no api entry found for {self.collection_name}")
-
-        except Exception as e:
-            log_info(f"Cannot build metadata from api. {self.collection_name}")
-            log_exception(e)
-            return None
-    
+   
     def __set_collection_meta_data(self, coll_api: dict):
         """
         Docstring for set_collection_meta_data
@@ -122,7 +121,7 @@ class TxOldCollection(TxCollection):
         self.extra_fields["txgio:resolution"] = coll_api["resolution"]
         self.extra_fields["txgio:bands"] = self.csv_to_arr(coll_api["band_types"])
         self.extra_fields["txgio:citation"] = "PLACEHOLDER"
-        self.extra_fields["txgio:s_three_bucket_key"] = self.s3_key
+        self.extra_fields["txgio:s_three_bucket_key"] = self.collection_name
         self.extra_fields["txgio:public"] = coll_api["public"]
         self.extra_fields["txgio:availability"] = coll_api["availability"] == "Download"
         self.extra_fields["txgio:banner_text"] = "PLACEHOLDER"

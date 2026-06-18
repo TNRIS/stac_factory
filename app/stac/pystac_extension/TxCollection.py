@@ -13,7 +13,7 @@ from app.stac import log_info, log_exception
 from pandas import DataFrame
 
 from app.stac.pystac_extension.file_parsing import file_types
-from app.stac.pystac_extension.TxTypes import TileIndexDict
+from app.stac.pystac_extension.TxTypes import TileIndex
 
 BUILD_TEST_GEOJSON = True
 
@@ -30,33 +30,46 @@ class TxCollection(pystac.Collection):
     }
     panda_layer: geopandas.GeoDataFrame
     resolution: str
-    root = ""
     s3_collection: S3Collection
     wh_client: WarehouseClient
     data_wh_configuration: S3Config
-    index: TileIndexDict
+    index: TileIndex
     href: str
-    spatial_extent: pystac.SpatialExtent
     assets: dict
 
-    def __init__(self, data_wh_configuration, s3_collection, collection_name, stac_extensions):
-        self.wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
+    def __init__(self, data_wh_configuration, s3_collection, collection_name, stac_extensions, textent: pystac.TemporalExtent, description=""):
+        href = f"./catalog/{collection_name}/collection.json"
+        wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
+        # Configure panda_layer using geopandas, vsipathing capabilities.
+        vsi_path = f"/vsizip/vsicurl/{wh_client.get_filename_path(s3_collection.index_asset[0].path)}"
+        panda_layer = geopandas.GeoDataFrame.from_file(vsi_path, layer=0).to_crs("EPSG:4326")
+        spatial_extent = pystac.SpatialExtent(panda_layer.total_bounds.tolist())
+        extent = pystac.Extent(spatial_extent, textent)
+        super().__init__(
+            id=collection_name,
+            description=description,
+            stac_extensions=stac_extensions,
+            href=href,
+            extent=extent,
+            catalog_type = pystac.CatalogType.SELF_CONTAINED)
+        self.panda_layer = panda_layer
+
+        self.wh_client: WarehouseClient = wh_client
         self.data_wh_configuration = data_wh_configuration
         self.s3_collection = s3_collection
         self.collection_name = collection_name
         self.stac_extensions = stac_extensions
-        self.href = f"./catalog/{collection_name}/collection.json"
 
-        # Configure panda_layer using geopandas, vsipathing capabilities.
-        vsi_path = f"/vsizip/vsicurl/{self.wh_client.get_filename_path(self.s3_collection.index_asset[0].path)}"
-        self.panda_layer = geopandas.GeoDataFrame.from_file(vsi_path, layer=0).to_crs("EPSG:4326")
+        
         self.tile = self.panda_layer.to_dict()
-        self.index: TileIndexDict = TileIndexDict(self.panda_layer)
+        self.index: TileIndex = TileIndex(self.panda_layer)
 
-        self.spatial_extent = pystac.SpatialExtent(self.panda_layer.total_bounds.tolist())
+        # if ('VerDate' in self.index.dict):
+        #     temporal = pystac.TemporalExtent([datetime.fromisoformat(self.index.dict.get("VerDate")), datetime.fromisoformat(self.index.dict.get("VerDate"))])
+
         self.construct_spatial_tags()        
         if(self.index):
-            self.extra_fields["txgio:geometry"] = self.index.get('outline')
+            self.extra_fields["txgio:geometry"] = self.index.outline
 
     def construct_spatial_tags(self):
         # Tag counties
@@ -80,7 +93,7 @@ class TxCollection(pystac.Collection):
                 spatial_tags += f",{cities_dict['objects']['TX_Cities']['geometries'][i]['properties']['name']}"
         try:
             if(BUILD_TEST_GEOJSON):
-                with  open(f"{ROOT}/testgeojson/{self.root}_testgeom.geojson", "w") as f:
+                with  open(f"{ROOT}/testgeojson/{self.collection_name}_testgeom.geojson", "w") as f:
                     f.write(self.index.outline)
         except:
             log_info("Couldn't write an example geojson")
@@ -133,7 +146,7 @@ class TxCollection(pystac.Collection):
         whc: DataFrame = DataFrame(data=self.s3_collection.paths.ITEMS)
 
         def build_asset_item(item, description, media_type, role):
-            title = f"{self.root}-{item.ext.split('.')[-1]}"
+            title = f"{self.collection_name}-{item.ext.split('.')[-1]}"
 
             from app.stac.pystac_extension.file_parsing import file_types
             roles = file_types[item.ext]
