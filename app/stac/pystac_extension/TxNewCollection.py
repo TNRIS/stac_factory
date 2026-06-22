@@ -13,26 +13,17 @@ class TxNewCollection(TxCollection):
         data_wh_configuration,
         stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
                                       "https://stac-extensions.github.io/file/v2.1.0/schema.json"]):
-        super(TxNewCollection, self).__init__(data_wh_configuration, s3_collection, whcollection['id'], stac_extensions)
-
-        self.whcollection = whcollection
-        
-        title = whcollection.get("title")
-        keywords = whcollection.get("keywords")
-        id = whcollection.get("id")
-        description = whcollection.get("description")
-
-        iso_temporals = self.whcollection.get("extent").get("temporal").get("interval") #Maybe get this from index
-        if ('VerDate' in self.index.dict):
-            log_info(f"There is a VerDate in tile_index. Consider using that instead. It is {self.index.dict.get("VerDate")}")
+        iso_temporals = whcollection.get("extent").get("temporal").get("interval")
         temporals: list[list[datetime]] = []
         for temporal in iso_temporals:
             temporals.append([datetime.fromisoformat(temporal[0]), datetime.fromisoformat(temporal[1])])
             
         temporal = pystac.TemporalExtent(temporals)
-        extent = pystac.Extent(self.spatial_extent, temporal)
+        description = whcollection.get("description")
 
-        super(TxCollection, self).__init__(id=id, description=description, stac_extensions=self.stac_extensions, href=self.href, extent=extent, catalog_type = pystac.CatalogType.SELF_CONTAINED, title=title, keywords=keywords)
+        super().__init__(data_wh_configuration, s3_collection, whcollection['id'], stac_extensions, temporal, description)
+
+        self.whcollection = whcollection
         self.build_metadata_from_input()
         self.build_stac_items()
         return
