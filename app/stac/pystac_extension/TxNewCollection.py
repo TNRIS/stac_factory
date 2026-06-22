@@ -37,7 +37,6 @@ class TxNewCollection(TxCollection):
         if(self.whcollection.get("txgio:banner_text")):
             self.extra_fields["txgio:banner_text"] = self.whcollection.get("txgio:banner_text")
 
-
         if(self.whcollection.get("txgio:notes")):
             self.extra_fields["txgio:notes"] = self.whcollection.get("txgio:notes")
         if(self.whcollection.get("txgio:spatial_keywords")):

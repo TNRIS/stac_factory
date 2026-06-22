@@ -23,7 +23,6 @@ class Resource:
 
         p = Path(self.path)
         
-
         self.ext = ''.join(p.suffixes)
         self.ChecksumAlgorithm = path.ChecksumAlgorithm
         self.etag = path.ETag
@@ -99,14 +98,9 @@ class Collection():
                         size=r.size,
                         etag=r.etag,
                         collection_name=r.collection_name,
-                        checksum_algorithm=r.ChecksumAlgorithm
+                        checksum_algorithm=r.ChecksumAlgorithm[0]
                     )
 
-                    asset.ext = r.ext
-                    asset.size = r.size
-                    asset.etag = r.etag
-                    asset.collection_name = r.collection_name
-                    asset.checksum_algorithm = r.ChecksumAlgorithm[0]
                     if asset.type == "index":
                         if(asset.fname.lower().endswith(".zip")):
                             self.index_asset.append(asset)

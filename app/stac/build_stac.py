@@ -1,3 +1,4 @@
+from app.stac.pystac_extension import build_roles_for
 from .pystac_extension.TxNewCollection import TxNewCollection
 from .pystac_extension.TxOldCollection import TxOldCollection
 from .pystac_extension.TxCatalog import TxCatalog
@@ -27,7 +28,7 @@ class TestException(Exception):
 
 # Toggle this to True in order to rebuild the catalog from scratch.
 SKIP_KNOWN_COLLECTIONS_FLAG: bool = True # Set this to True.
-CLEAN_STASH_FLAG = False
+CLEAN_STASH_FLAG = True
 
 wh_client: WarehouseClient
 
@@ -43,12 +44,7 @@ def skipper(collection_root):
         "noaa-2020-ccap-landcover-1m", # Multiple, problems, seems to be using  tile index of the -r one (noaa-2020-ccap-landcover-1m-r).
         "naip-2016-nccir-1m" #No TileID entry for Tile 2800641 in naip-2016-nccir
     ]):
-        #log_info(f"Skipping {collection_root}")
         return True
-    
-    # if(not collection_root == "stratmap-2019-address-points"):
-    #     log_info(f"Skipping {collection_root}")
-    #     return True
     
     log_info(f"Running {collection_root}")
     
@@ -58,7 +54,6 @@ def build_collection(wh_collection, s3_configuration, q: Queue | None = None) ->
     tx_collection: TxNewCollection | TxOldCollection
     s3_collection: S3Collection
     dest_href=f"{temp_storage}{collection_root}"
-
 
     if(isinstance(wh_collection, str)):
         collection_root = wh_collection
@@ -92,6 +87,7 @@ def build_collection(wh_collection, s3_configuration, q: Queue | None = None) ->
         return None
 
     for asset in s3_collection.paths.ASSETS:
+        roles = build_roles_for(asset)
         if asset.type == "index":
             passet = pystac.Asset(
                 href=asset.path,
@@ -99,7 +95,8 @@ def build_collection(wh_collection, s3_configuration, q: Queue | None = None) ->
                 extra_fields={
                     "file:size":asset.size,
                     "file:local_path":asset.path
-                }
+                },
+                roles=roles
             )
             tx_collection.assets['tile_index_url'] = passet
         else:
@@ -109,13 +106,14 @@ def build_collection(wh_collection, s3_configuration, q: Queue | None = None) ->
                 extra_fields={
                     "file:size":asset.size,
                     "file:local_path":asset.path
-                }
+                },
+                roles=roles
             )
             tx_collection.assets[asset.fname] = passet
 
     try:
         log_info(f"Validating {collection_root}")
-        tx_collection.validate()
+        tx_collection.validate_all()
         log_info(f"Done validating {collection_root}")
     except Exception as e:
         log_info(f"Invalid document {collection_root}")
@@ -176,7 +174,7 @@ def gen_stac_collection(whc) -> None:
         collections.append(pystac.read_file(f"{collection}/collection.json"))
 
     catalog.add_children(collections)
-    catalog.save_object(dest_href=temp_storage)
+    catalog.normalize_and_save(root_href=temp_storage)
     log_info("Done processing.")
 
 def gen_this_stac_collection(whc, s3_configuration):
@@ -195,6 +193,6 @@ def gen_this_stac_collection(whc, s3_configuration):
         
         catalog = TxCatalog()
         catalog.add_children([tx_collection])
-        
+        catalog.normalize_and_save(root_href=temp_storage)
         dict_items = tx_collection.get_items()
         loader.load_collection_and_items(file=tx_collection, dict_items=dict_items)

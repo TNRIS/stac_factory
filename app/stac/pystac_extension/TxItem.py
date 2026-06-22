@@ -80,16 +80,16 @@ class TxItem(pystac.Item):
             s_geom = preprocessed_geometry['geometry'][index]
             simplify = s_geom.simplify(tolerance=0.0001, preserve_topology=True) #Defaults to Douglas Peucker, recommended in api for the_geom.
             geometries.append(simplify)
-            TEST_EXPORT_ITEM = True # Change this to True if you want to have geojson to test with.
-            if( TEST_EXPORT_ITEM):
-                try:
-                    path = f"{ROOT}/testgeojson/{self.stac_id.split('_')[0]}/items"
-                    if not os.path.exists(path):
-                        os.makedirs(path)
-                    with open(f"{path}/{self.stac_id}_testgeom.geojson", "w") as f:
-                        f.write(shapely.to_geojson(simplify))
-                except:
-                    log_info("Can't write a test file skipping.")
+            # TEST_EXPORT_ITEM = True # Change this to True if you want to have geojson to test with.
+            # if( TEST_EXPORT_ITEM):
+            #     try:
+            #         path = f"{ROOT}/testgeojson/{self.stac_id.split('_')[0]}/items"
+            #         if not os.path.exists(path):
+            #             os.makedirs(path)
+            #         with open(f"{path}/{self.stac_id}_testgeom.geojson", "w") as f:
+            #             f.write(shapely.to_geojson(simplify))
+            #     except:
+            #         log_info("Can't write a test file skipping.")
             geometries.append(preprocessed_geometry['geometry'][index].bounds)
         else:
             geometries = self.get_geom_by_priority(resources)
@@ -97,13 +97,9 @@ class TxItem(pystac.Item):
         for resource in resources:
             if(resource.index == tile_id):
                 roles = build_roles_for(resource)
-                rz = roles['roles'][1]
-                a = rz['description']
-                b = rz['media_type']
-                c = rz['usage']
 
                 asset = TxAsset(resource, collection_name, resolution,
-                                roles=[roles['ext'],b,c],
+                                roles=roles,
                                 extra_fields={
                                                 "file:size":resource.size,
                                                 "file:local_path":resource.path
@@ -111,7 +107,7 @@ class TxItem(pystac.Item):
                 # if not hasattr(asset,"set_owner"):
                 #     asset.set_owner = pystac.Asset.set_owner
                 # asset.set_owner = pystac.Asset.set_owner
-                assets[f"{collection_name}-{roles["ext"].split(".")[-1]}"] = asset
+                assets[f"{collection_name}-{resource.ext.split(".")[-1]}"] = asset
             # extra_fields={
             #         "file:checksum":resource.etag.split("\"")[1],
             #         "file:size":resource.size,

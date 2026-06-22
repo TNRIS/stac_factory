@@ -1,9 +1,6 @@
 from app.config.PathTyping import ItemPath
 
 class TypeDescriptor(dict):
-    description = ""
-    media_type = ""
-    usage = ""
     """
     Docstring for TypeDescriptor
     """
@@ -42,11 +39,13 @@ file_types: dict[str, TypeDescriptor] = {
     '.tif': TypeDescriptor("GeoTIFF raster image", "image/tiff", "data"),
     '.jpg': TypeDescriptor("JPEG raster image", "image/jpeg", "data")}
 
-def build_roles_for(resource: ItemPath):
+#Question, Do I use zip imei type? Or the file inside the zip? Left with zip imei type for now due to more questions if I go with inside file.
+def build_roles_for(resource: ItemPath)-> list[str]:
     if resource.ext in file_types.keys():
-        return {
-            "ext": resource.ext,
-            "roles": [resource.type, file_types[resource.ext], resource.ext]
-        }
+        roles = list(file_types[resource.ext].values())
+        roles.append(resource.ext)
+        if(resource.ext == ".zip"):
+            roles.append(resource.type)
+        return roles
     else:
-        print(f"Filetype {resource.ext} not found for stac_items in: {resource.path}")
+        raise Exception(f"Filetype {resource.ext} not found for stac_items in: {resource.path}")

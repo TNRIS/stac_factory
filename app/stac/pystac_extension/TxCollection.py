@@ -4,7 +4,7 @@ import json, pystac
 from typing import List
 from app.aws.s_three import Collection as S3Collection, WarehouseClient, Resource
 from app.config.S3Config import S3Config
-from .TxItem import TxItem
+from .TxItem import TxItem, build_roles_for
 from app.root import ROOT
 # Import geographic manipulation libraries
 import geopandas
@@ -145,20 +145,19 @@ class TxCollection(pystac.Collection):
         resources = []
         whc: DataFrame = DataFrame(data=self.s3_collection.paths.ITEMS)
 
-        def build_asset_item(item, description, media_type, role):
+        def build_asset_item(item, description, media_type):
             title = f"{self.collection_name}-{item.ext.split('.')[-1]}"
 
-            from app.stac.pystac_extension.file_parsing import file_types
-            roles = file_types[item.ext]
+            if(item.ext == ".zip"):
+                title=f"{title}-{item.type}"
+
+            roles = build_roles_for(resource=item)
             
-            a = roles['description']
-            b = roles['media_type']
-            c = roles['usage']
             asset_item = pystac.ItemAssetDefinition({
-                    "description": a,
+                    "description": description,
                     "ext": item.ext,
                     "media_type": media_type,
-                    "roles": [item.ext,b,c],
+                    "roles": roles,
                     "title": title
                 })
             self.item_assets[title] = asset_item
@@ -171,7 +170,7 @@ class TxCollection(pystac.Collection):
                 next_index = whc.values[i+1][0].index
             resources.append(item)
             type = file_types[item.ext]
-            build_asset_item(item, type.description, type.media_type, type.usage)
+            build_asset_item(item, type.get("description"), type.get("media_type"))
 
             # tx_collection.item_assets.update()
             if(item.index == next_index):
