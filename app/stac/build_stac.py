@@ -1,23 +1,19 @@
 from .pystac_extension.TxNewCollection import TxNewCollection
 from .pystac_extension.TxOldCollection import TxOldCollection
 from .pystac_extension.TxCatalog import TxCatalog
-
+from .pypgstac_extension.TxLoader import TxLoader
 from app.stac import log_info
 from pandas import DataFrame
 from multiprocessing import Process, Queue
 import os
 import pystac
+import json
 import time
-from pypgstac.load import Loader, Methods
-from pypgstac.db import PgstacDB
-from pypgstac.load import Loader
 from app.aws.s_three import WarehouseClient
 from app.aws.s_three import Collection as S3Collection
 import shutil
 from app.root.root import ROOT
-
-db = PgstacDB()
-loader = Loader(db)
+loader = TxLoader()
 temp_storage = f"{ROOT}/catalog/" # Don't change this unless you know what it does. It will
 
 # # Register the custom write method
@@ -56,24 +52,24 @@ def skipper(collection_root):
     
     log_info(f"Running {collection_root}")
     
-def build_collection(wh_collection, s3_configuration, q: Queue | None):
+def build_collection(wh_collection, s3_configuration, q: Queue | None = None) -> None | TxOldCollection | TxNewCollection:
     wh_client = WarehouseClient(s3_configuration)
     collection_root = ""
     tx_collection: TxNewCollection | TxOldCollection
     s3_collection: S3Collection
-    
+    dest_href=f"{temp_storage}{collection_root}"
 
 
     if(isinstance(wh_collection, str)):
         collection_root = wh_collection
         if(skipper(collection_root)):
             return
-        if os.path.exists(f"{temp_storage}{collection_root}"):
+        if os.path.exists(dest_href):
             log_info(f"Skipping {collection_root} because it exists.")
-            dest_href=f"{temp_storage}{collection_root}"
+            
             if(q):
                 q.put(dest_href)
-            return True
+            return None
         items = wh_client.get(f"{s3_configuration.ROOT}{collection_root}")
         s3_collection = S3Collection(items)
         if len(items):
@@ -123,9 +119,7 @@ def build_collection(wh_collection, s3_configuration, q: Queue | None):
         log_info(f"Done validating {collection_root}")
     except Exception as e:
         log_info(f"Invalid document {collection_root}")
-        return
-
-    tx_collection.save(dest_href=dest_href)
+        return None
 
     if(q):
         q.put(dest_href)
@@ -184,23 +178,23 @@ def gen_stac_collection(whc) -> None:
     catalog.add_children(collections)
     catalog.save_object(dest_href=temp_storage)
     log_info("Done processing.")
+
 def gen_this_stac_collection(whc, s3_configuration):
     """
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
     clean_stash()
-    SKIP_KNOWN_COLLECTIONS_FLAG = False
     tx_collection = build_collection(whc, s3_configuration)
-    # tx_collection.validate()
     if(tx_collection):
-
-    # print("Validating items") --- I'm going to upload the export I sent you guys to test it.
-    # tx_collection.validate_all()
-    # print("Items Valid")
-        collections = [tx_collection.to_dict()]
+        try:
+            log_info("Validating items")
+            tx_collection.validate_all()
+        except Exception as e:
+            log_info(f"Cannot validate {whc.id}")
+            return
+        
+        catalog = TxCatalog()
+        catalog.add_children([tx_collection])
+        
         dict_items = tx_collection.get_items()
-        loader.load_collections(collections, insert_mode=Methods.upsert)
-        items = []
-        for i in dict_items:
-            items.append(i.to_dict())
-        loader.load_items(items, insert_mode=Methods.upsert)
+        loader.load_collection_and_items(file=tx_collection, dict_items=dict_items)

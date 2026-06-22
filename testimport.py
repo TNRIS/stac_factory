@@ -1,13 +1,11 @@
 from app.stac.build_stac import gen_this_stac_collection
-import os
-from app.root import ROOT
 from app.config.S3Config import S3Config
 
 DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None
 
 test_brown = {
-    'id': 'stratmap-2019-address-points',
+    'id': 'stratmap-2019-50cm-brown-county',
     'title': 'provided_title',
     'txgio:publication_date': 'provided publication_date',
     'txgio:banner_text': 'provided banner_text',
@@ -24,7 +22,7 @@ test_brown = {
             ]
         }
     },
-    'description': 'provided description',
+    'description': 'provided description test modify 2',
     'txgio:categories': ["Imagery", "Historic Imagery", "Elevation"],
     'txgio:notes': 'provided txgio:notes',
     'txgio:spatial_keywords': 'provided txgio:spatial_keywords',
@@ -57,23 +55,3 @@ whconf = S3Config(
     COLLECTION_ROOT="/")
 
 gen_this_stac_collection(test_brown, whconf)
-
-# id
-# txgio:publication_date?
-# title
-# txgio:banner_text?
-# extent (will only have temporal data.  You'll have to add the bbox data)
-# description
-# txgio:categories (will have at least 1 set)
-# txgio:notes?
-# txgio:spatial_keywords?
-# txgio:spatial_reference
-# txgio:bands
-# txgio:file_type
-# txgio:resolution
-# providers
-# license
-# item_assets
-# assets
-# keywords
-# txgio:s_three_bucket_key
