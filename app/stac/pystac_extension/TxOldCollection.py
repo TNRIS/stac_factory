@@ -4,7 +4,7 @@ from app.config.S3Config import S3Config
 from app.stac import log_info, log_exception
 from app.aws.s_three import Collection as S3Collection
 
-import shapely, pdal, os, json, pystac, requests
+import pystac, requests
 from datetime import datetime
 from app.root import ROOT
 import pandas
@@ -108,11 +108,12 @@ class TxOldCollection(TxCollection):
         categories = self.csv_to_arr(coll_api['category'])
 
         for i, category in enumerate(categories):
-            if category == "Lidar" or category == "Bathymetry":
+            if category in ["Lidar", "Bathymetry"]:
                 categories[i] = "Elevation"
-            elif category == "Land_Cover":
+            elif category in ["Land_Cover"]:
                 categories[i] = "Basemap"
-            
+        categories = list(set(categories)) # Convert to a set, then back to list to remove duplicates
+        
         self.extra_fields["txgio:categories"] = categories
         self.extra_fields["txgio:collection_id"] = coll_api["collection_id"]
         self.extra_fields["txgio:publication_date"] = coll_api["publication_date"]
