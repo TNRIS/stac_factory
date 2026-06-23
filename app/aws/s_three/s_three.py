@@ -23,16 +23,11 @@ class Resource:
 
         p = Path(self.path)
         
-
         self.ext = ''.join(p.suffixes)
         self.ChecksumAlgorithm = path.ChecksumAlgorithm
         self.etag = path.ETag
         self.size = path.Size
-
         self.type = Path(self.path).parts[-2]
-
-        if(self.type == "index"):
-            print(f"Index type for {self.collection_name}")
         self.filename = os.path.splitext(os.path.split(self.path)[1])[0]
 
     # def get_contents(self):
@@ -103,14 +98,9 @@ class Collection():
                         size=r.size,
                         etag=r.etag,
                         collection_name=r.collection_name,
-                        checksum_algorithm=r.ChecksumAlgorithm
+                        checksum_algorithm=r.ChecksumAlgorithm[0]
                     )
 
-                    asset.ext = r.ext
-                    asset.size = r.size
-                    asset.etag = r.etag
-                    asset.collection_name = r.collection_name
-                    asset.checksum_algorithm = r.ChecksumAlgorithm[0]
                     if asset.type == "index":
                         if(asset.fname.lower().endswith(".zip")):
                             self.index_asset.append(asset)
@@ -161,7 +151,6 @@ class BucketClient:
         """
             Return a list of strings representing directories in a s3 bucket provided by bucket.
         """             
-        print(f"S3 Scanning: {prefix}")           
         kwargs = {
             "Bucket": self.name,
             "Prefix": prefix
@@ -182,8 +171,6 @@ class BucketClient:
         return dirs
     
     def upload(self, key, body):
-        print("Here")
-
         self.client.put_object(Bucket=self.name, Key=key, Body=body)
 
 class WarehouseClient(BucketClient):
