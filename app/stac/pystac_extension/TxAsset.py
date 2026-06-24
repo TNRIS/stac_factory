@@ -17,8 +17,6 @@ class TxAsset(pystac.Asset):
         :rtype: dict[str, Asset]
         """
         self.stac_assets = {}
-        if(not resource.type in roles):
-            roles.append(resource.type)
         
         super(TxAsset, self).__init__(
             href=f"/{resource.path}",

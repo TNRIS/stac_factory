@@ -44,8 +44,7 @@ def build_roles_for(resource: ItemPath)-> list[str]:
     if resource.ext in file_types.keys():
         roles = list(file_types[resource.ext].values())
         roles.append(resource.ext)
-        if(resource.ext == ".zip"):
-            roles.append(resource.type)
+        roles.append(resource.type)
         return roles
     else:
         raise Exception(f"Filetype {resource.ext} not found for stac_items in: {resource.path}")
