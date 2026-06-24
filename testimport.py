@@ -22,7 +22,7 @@ test_brown = {
             ]
         }
     },
-    'description': 'provided description test modify 2',
+    'description': '123123123123',
     'txgio:categories': ["Imagery", "Historic Imagery", "Elevation"],
     'txgio:notes': 'provided txgio:notes',
     'txgio:spatial_keywords': 'provided txgio:spatial_keywords',
