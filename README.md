@@ -53,3 +53,6 @@
 
 ## TESTING
 I use launch.json definitions to test this since it's less limiting. When development is done I'll write some other types of tests.
+
+## CODE FORMATTING
+I use python Black code formatter. Formatting heavy commits should be in a seperate commit though.
