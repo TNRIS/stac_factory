@@ -7,15 +7,14 @@ from pystac import Item
 from app.stac.pystac_extension.TxOldCollection import TxOldCollection
 from app.stac.pystac_extension.TxNewCollection import TxNewCollection
 
-from typing import (
-    Iterator,
-    Optional
-)
+from typing import Iterator, Optional
+
 
 class TxLoader(Loader):
     """
     Docstring for TxLoader
     """
+
     def __init__(self):
         db = PgstacDB()
         super().__init__(db)
@@ -28,7 +27,7 @@ class TxLoader(Loader):
             * deletes associated items
             * all as one transaction.
             * Caveat with the above assumptions is that the db has to be in a pypgstac managed state.
-        
+
         :param self: Description
         :param collection_id: Description
         """
@@ -40,20 +39,17 @@ class TxLoader(Loader):
                         SELECT 1 FROM pgstac.collections WHERE id = %s
                     );
                     """,
-                    [collection_id]
+                    [collection_id],
                 )
                 row = cur.fetchone()
                 exists = row and row[0]
                 if exists:
-                    cur.execute(
-                        "SELECT pgstac.delete_collection(%s);",
-                        [collection_id]
-                    )
+                    cur.execute("SELECT pgstac.delete_collection(%s);", [collection_id])
 
     def get_content(self, collection_id):
         """
         Docstring for get_content
-        Returns content if it exists.        
+        Returns content if it exists.
         :param self: Description
         :param collection_id: Description
         """
@@ -63,10 +59,10 @@ class TxLoader(Loader):
                     """
                         SELECT content FROM pgstac.collections WHERE id = %s
                     """,
-                    [collection_id]
+                    [collection_id],
                 )
                 row = cur.fetchone()
-                exists = row and row[0] 
+                exists = row and row[0]
                 if exists:
                     return row[0]
 
@@ -74,9 +70,9 @@ class TxLoader(Loader):
         self,
         file: TxOldCollection | TxNewCollection,
         dict_items: Iterator[Item],
-        insert_mode: Optional[Methods] = Methods.upsert
+        insert_mode: Optional[Methods] = Methods.upsert,
     ) -> None:
-        if( insert_mode == Methods.upsert ):
+        if insert_mode == Methods.upsert:
             self.delete_collection_and_items(file.collection_name)
             insert_mode = Methods.insert
         self.get_content(file.collection_name)

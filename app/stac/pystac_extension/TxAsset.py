@@ -1,11 +1,19 @@
 import pystac
 
+
 class TxAsset(pystac.Asset):
     # def __init__(self, file_type: str, rsc_path: str, title: str):
-    def __init__(self, resource, collection_name: str, resolution: str | None, roles: list[str] = [], extra_fields={}):
+    def __init__(
+        self,
+        resource,
+        collection_name: str,
+        resolution: str | None,
+        roles: list[str] = [],
+        extra_fields={},
+    ):
         """
         Docstring for assets_builder
-        
+
         :param self: pystac.Asset
         :param file_type: File type of the resource ex: shp
         :type file_type: str
@@ -17,13 +25,14 @@ class TxAsset(pystac.Asset):
         :rtype: dict[str, Asset]
         """
         self.stac_assets = {}
-        
+
         super(TxAsset, self).__init__(
             href=f"/{resource.path}",
             title=collection_name,
-            description= f'{resource.type} at resolution {resolution} for {resource.index} of {collection_name}',
+            description=f"{resource.type} at resolution {resolution} for {resource.index} of {collection_name}",
             media_type=f"{resource.type}",
             extra_fields=extra_fields,
-            roles=roles)
+            roles=roles,
+        )
         self.stac_assets[collection_name] = self
-        self.stac_assets['readable_name'] = resource.type
+        self.stac_assets["readable_name"] = resource.type
