@@ -25,9 +25,6 @@ temp_storage = (
 # stac_io
 
 
-# TODO
-# Update stac catalog schema
-# Make this use multiprocessing
 class TestException(Exception):
     pass
 
@@ -150,38 +147,42 @@ def gen_stac_collection(whc) -> None:
     q = Queue()
     tasks: list = []
 
-    # Build a list of processes, to be ran at a later time.
-    for whcollection in wh_collections.itertuples():
-        p = Process(
-            name=whcollection[1],
-            target=build_collection,
-            args=(whcollection[1].split("/")[-2], whc, q),
-        )
-        if not p:
-            continue
-        tasks.append(p)
+    try:
+        # Build a list of processes, to be ran at a later time.
+        for whcollection in wh_collections.itertuples():
+            p = Process(
+                name=whcollection[1],
+                target=build_collection,
+                args=(whcollection[1].split("/")[-2], whc, q),
+            )
 
-    MAX_PROCS = min(
-        os.cpu_count(), 16
-    )  # Max 16 processes at once TODO: Calculate ram in Gigabytes and divide by 1.3
-    running = []
+            tasks.append(p)
 
-    for task in tasks:
-        # Wait until there's a free slot
-        while len(running) >= MAX_PROCS:
-            for p in list(running):
-                if not p.is_alive():
-                    p.join()
-                    running.remove(p)
-            time.sleep(0.05)
+        MAX_PROCS = min(
+            os.cpu_count(), 16
+        )  # Max 16 processes at once TODO: Calculate ram in Gigabytes and divide by 1.3
+        running = []
 
-        # Start a new process
-        task.start()
-        running.append(task)
+        for task in tasks:
+            # Wait until there's a free slot
+            while len(running) >= MAX_PROCS:
+                for p in list(running):
+                    if not p.is_alive():
+                        p.join()
+                        running.remove(p)
+                time.sleep(0.05)
 
-    # Final cleanup (wait for remaining processes)
-    for p in running:
-        p.join()
+            # Start a new process
+            task.start()
+            running.append(task)
+
+        # Final cleanup (wait for remaining processes)
+        for p in running:
+            p.join()
+    finally:
+        for p in running:
+            p.terminate()
+            p.join()
 
     collections = []
 
