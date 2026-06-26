@@ -5,6 +5,8 @@ from geopandas import GeoDataFrame
 from shapely.geometry.base import BaseGeometry
 from app.stac import log_exception
 
+from typing import TypedDict, Required, NotRequired, Literal, Any
+
 class TileIndex():
     outline: str
     dict: dict
@@ -31,3 +33,56 @@ class TileIndex():
         except Exception as e:
             log_exception(e)
 
+# categories (from json schema)
+Category = Literal[
+    "Imagery",
+    "Historic Imagery",
+    "Elevation",
+    "Basemap",
+    "Hydrography",
+    "Boundaries",
+    "Statewide",
+    "Archived",
+]
+
+class TypeProvider(TypedDict):
+    name: Required[str]
+    description: NotRequired[str]
+    url: NotRequired[str]
+    roles: NotRequired[list[str]]
+
+class TypeExtent(TypedDict):
+    spatial: Required[dict[str, Any]]
+    temporal: Required[dict[str, list[list[str]]]]
+
+ContentInput = TypedDict(
+    "ContentInput",
+    {
+        "id": Required[str],
+        "title": Required[str],
+        "description": Required[str],
+        "txgio:publication_date": NotRequired[str],
+        "txgio:banner_text": NotRequired[str],
+        "txgio:notes": NotRequired[str],
+        "txgio:spatial_keywords": NotRequired[str],
+        "txgio:categories": Required[list[Category]],
+        "keywords": NotRequired[list[str]],
+        "extent": NotRequired[TypeExtent],
+        "txgio:spatial_reference": Required[list[str]],
+        "txgio:bands": NotRequired[list[str]],
+        "txgio:resolution": NotRequired[str],
+        "txgio:file_type": NotRequired[str],
+        "providers": NotRequired[list[TypeProvider]],
+        "license": NotRequired[str],
+        "txgio:collection_id": NotRequired[str | None],
+        "txgio:geometry": NotRequired[dict[str, Any]],
+        "txgio:scale": NotRequired[str | None],
+        "txgio:citation": NotRequired[str | None],
+        "txgio:s_three_bucket_key": Required[str],
+        "txgio:public": Required[bool],
+        "txgio:availability": Required[bool],
+        "txgio:last_modified": Required[str],
+        "txgio:last_edited_by": Required[str],
+        "txgio:template": Required[str],
+    },
+)

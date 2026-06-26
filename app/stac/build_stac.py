@@ -4,6 +4,7 @@ from .pystac_extension.TxOldCollection import TxOldCollection
 from .pystac_extension.TxCatalog import TxCatalog
 from .pypgstac_extension.TxLoader import TxLoader
 from app.stac import log_info
+from app.stac.pystac_extension.TxTypes import *
 from pandas import DataFrame
 from multiprocessing import Process, Queue
 import os
@@ -147,7 +148,7 @@ def gen_stac_collection(whc) -> None:
             continue
         tasks.append(p)
 
-    MAX_PROCS = 8
+    MAX_PROCS = min(os.cpu_count(), 16) # Max 16 processes at once TODO: Calculate ram in Gigabytes and divide by 1.3
     running = []
 
     for task in tasks:
@@ -171,17 +172,22 @@ def gen_stac_collection(whc) -> None:
 
     while(not q.empty()):
         collection = q.get()
-        collections.append(pystac.read_file(f"{collection}/collection.json"))
+        collections.append(pystac.read_file(f"{collection}collection.json"))
 
     catalog.add_children(collections)
     catalog.normalize_and_save(root_href=temp_storage)
     log_info("Done processing.")
 
-def gen_this_stac_collection(whc, s3_configuration):
+def gen_this_stac_collection(whc: ContentInput, s3_configuration):
     """
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
     clean_stash()
+    content = loader.get_content(whc.get('id'))
+    if(content):
+        # Exists so stash fastapi Metadata. (Only ran on edgecase we need to rebuild geometry or add items.)
+        whc = content
+        
     tx_collection = build_collection(whc, s3_configuration)
     if(tx_collection):
         try:

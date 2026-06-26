@@ -50,6 +50,26 @@ class TxLoader(Loader):
                         [collection_id]
                     )
 
+    def get_content(self, collection_id):
+        """
+        Docstring for get_content
+        Returns content if it exists.        
+        :param self: Description
+        :param collection_id: Description
+        """
+        with psycopg.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                        SELECT content FROM pgstac.collections WHERE id = %s
+                    """,
+                    [collection_id]
+                )
+                row = cur.fetchone()
+                exists = row and row[0] 
+                if exists:
+                    return row[0]
+
     def load_collection_and_items(
         self,
         file: TxOldCollection | TxNewCollection,
@@ -59,6 +79,7 @@ class TxLoader(Loader):
         if( insert_mode == Methods.upsert ):
             self.delete_collection_and_items(file.collection_name)
             insert_mode = Methods.insert
+        self.get_content(file.collection_name)
 
         # Load Collections
         collections = iter([json.dumps(file.to_dict())])
@@ -69,7 +90,3 @@ class TxLoader(Loader):
         for i in dict_items:
             items.append(i.to_dict())
         super().load_items(iter(items))
-
-
-
-
