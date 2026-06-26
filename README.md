@@ -51,8 +51,5 @@
 7. This will upsert the collection into the postgres db in your environment
 8. (Make sure you activate venv) Either using the activate script or selecting interpretor through vscode
 
-## NOTES
-1. There is no tile index for address-points or land-parcels. Skipped for now. But it can work with fallback function to generate metadata from introspection. But it takes a long time.
-2. stratmap-2026-city-boundaries STATE_FIPS is 48, but tileid is 48000
-3. missing tileindex for 4039 in noaa-2020-ccap-landcover-1m
-4. only one tile indexed for noaa-2020-ccap-landcover-1m-r
+## TESTING
+I use launch.json definitions to test this since it's less limiting. When development is done I'll write some other types of tests.

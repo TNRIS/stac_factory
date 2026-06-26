@@ -11,7 +11,7 @@ class TxNewCollection(TxCollection):
         whcollection: dict,
         s3_collection: S3Collection,
         data_wh_configuration,
-        stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
+        stac_extensions: list[str] = ["https://test-gio-data-warehouse.s3.us-east-1.amazonaws.com/spec/schema.json",
                                       "https://stac-extensions.github.io/file/v2.1.0/schema.json"]):
         iso_temporals = whcollection.get("extent").get("temporal").get("interval")
         temporals: list[list[datetime]] = []
@@ -62,5 +62,5 @@ class TxNewCollection(TxCollection):
         self.extra_fields["txgio:public"] = False
         self.extra_fields["txgio:availability"] = False
         self.extra_fields["txgio:last_modified"] = str(datetime.today())
-        self.extra_fields["txgio:last_edited_by"] = "PLACEHOLDER"
-        self.extra_fields["txgio:template"] = "PLACEHOLDER"
+        self.extra_fields["txgio:last_edited_by"] = self.whcollection.get("txgio:last_edited_by") or "PLACEHOLDER"
+        self.extra_fields["txgio:template"] = self.whcollection.get("txgio:template") or "PLACEHOLDER"

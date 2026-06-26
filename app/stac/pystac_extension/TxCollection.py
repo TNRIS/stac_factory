@@ -15,7 +15,7 @@ from pandas import DataFrame
 from app.stac.pystac_extension.file_parsing import file_types
 from app.stac.pystac_extension.TxTypes import TileIndex
 
-BUILD_TEST_GEOJSON = True
+BUILD_TEST_GEOJSON = False
 
 gdal.UseExceptions()
 
@@ -67,7 +67,7 @@ class TxCollection(pystac.Collection):
         # if ('VerDate' in self.index.dict):
         #     temporal = pystac.TemporalExtent([datetime.fromisoformat(self.index.dict.get("VerDate")), datetime.fromisoformat(self.index.dict.get("VerDate"))])
 
-        self.construct_spatial_tags()        
+        self.construct_spatial_tags()
         if(self.index):
             self.extra_fields["txgio:geometry"] = self.index.outline
 

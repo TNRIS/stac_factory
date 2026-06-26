@@ -29,7 +29,10 @@ file_types: dict[str, TypeDescriptor] = {
     '.jp2.xml': TypeDescriptor("Metadata in xml format for .jp2 files", "application/xml", "metadata"),
     '.sid.aux.xml': TypeDescriptor("Auxilary metadata in xml format for .sid files", "application/xml", "metadata"),
     '.sid.xml': TypeDescriptor("Metadata in xml format for .sid files", "application/xml", "metadata"),
+    '.pdf': TypeDescriptor("PDF document", "application/pdf", "metadata"),
     
+    '.docx': TypeDescriptor("Microsoft Word document (Open XML format)", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "metadata"),
+    '.doc': TypeDescriptor("Microsoft Word document (legacy binary format)", "application/msword", "metadata"),
     '.sid': TypeDescriptor("MrSID raster image", "image/x-mrsid", "data"),
     '.zip': TypeDescriptor("Zip archive", "application/zip", "data"),
     '.tif': TypeDescriptor("Tif image", "image/tiff", "data"),

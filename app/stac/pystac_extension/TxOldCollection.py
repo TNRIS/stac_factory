@@ -17,7 +17,7 @@ class TxOldCollection(TxCollection):
         collection_name: str,
         s3_collection: S3Collection,
         data_wh_configuration: S3Config,
-        stac_extensions: list[str] = ["https://gist.githubusercontent.com/L-Har/b7b9018b31d1d8f17b7fc0c0dcb606c7/raw/36a2a0faf99139a499df6a51c0feb42a1c49fba3/txgio.json",
+        stac_extensions: list[str] = ["https://test-gio-data-warehouse.s3.us-east-1.amazonaws.com/spec/schema.json",
                                       "https://stac-extensions.github.io/file/v2.1.0/schema.json"]):
         
         
@@ -70,7 +70,7 @@ class TxOldCollection(TxCollection):
         if(len(coll_api['results'])):
             return coll_api
         else:
-            cross_walk = pandas.read_excel(f'{ROOT}/txgio_extension/API-CollectionID-CollectionName-Crosswalk2.xlsx', ["LCD"])["LCD"]
+            cross_walk = pandas.read_excel(f'{ROOT}/txgio_extension/API-CollectionID-CollectionName-Crosswalk.xlsx', ["LCD"])["LCD"]
             
             for i in cross_walk.itertuples():
                 
@@ -92,7 +92,7 @@ class TxOldCollection(TxCollection):
         except Exception as e:
             print(e)
         
-        cross_walk = pandas.read_excel('txgio_extension/API-CollectionID-CollectionName-Crosswalk2.xlsx', ["LORE"])["LORE"]
+        cross_walk = pandas.read_excel('txgio_extension/API-CollectionID-CollectionName-Crosswalk.xlsx', ["LORE"])["LORE"]
         for i in cross_walk.itertuples():
             if i[8] == name:
                 coll_api_url = f'{self.settings["API_URL"]}/api/v1/historical/collections?collection_id={i.collection_id}'
