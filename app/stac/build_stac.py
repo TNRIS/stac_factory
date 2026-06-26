@@ -1,19 +1,15 @@
-from app.stac.pystac_extension import build_roles_for
-from .pystac_extension.TxNewCollection import TxNewCollection
-from .pystac_extension.TxOldCollection import TxOldCollection
-from .pystac_extension.TxCatalog import TxCatalog
+from .pystac_extension import build_roles_for
+from .pystac_extension import tx_new_collection
+from .pystac_extension.tx_old_collection import TxOldCollection
+from .pystac_extension.tx_catalog import TxCatalog
+
 from .pypgstac_extension.TxLoader import TxLoader
 from app.stac import log_info
-from app.stac.pystac_extension.TxTypes import *
+from app.stac.pystac_extension.tx_types import *
 from pandas import DataFrame
 from multiprocessing import Process, Queue
-import os
-import pystac
-import json
-import time
-from app.aws.s_three import WarehouseClient
-from app.aws.s_three import Collection as S3Collection
-import shutil
+import os, pystac, time, shutil
+from app.aws.s_three import WarehouseClient, Collection as S3Collection
 from app.root.root import ROOT
 
 loader = TxLoader()
@@ -37,7 +33,6 @@ wh_client: WarehouseClient
 
 
 def skipper(collection_root):
-    # "stratmap-2019-address-points", # Well done
     if collection_root in [
         "tlc-legislative-boundaries",  # No index file.
         "stratmap-2026-city-boundaries",  # STATE_FIPS is 48, but tileid is 48000
@@ -55,10 +50,10 @@ def skipper(collection_root):
 
 def build_collection(
     wh_collection, s3_configuration, q: Queue | None = None
-) -> None | TxOldCollection | TxNewCollection:
+) -> None | TxOldCollection | tx_new_collection:
     wh_client = WarehouseClient(s3_configuration)
     collection_root = ""
-    tx_collection: TxNewCollection | TxOldCollection
+    tx_collection: tx_new_collection | TxOldCollection
     s3_collection: S3Collection
     dest_href = f"{temp_storage}{collection_root}"
 
@@ -85,7 +80,7 @@ def build_collection(
         items = wh_client.get(f"{s3_configuration.ROOT}{collection_root}")
         s3_collection = S3Collection(items)
         if len(items):
-            tx_collection = TxNewCollection(
+            tx_collection = tx_new_collection(
                 wh_collection, s3_collection, s3_configuration
             )
 

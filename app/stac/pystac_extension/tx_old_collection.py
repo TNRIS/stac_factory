@@ -1,4 +1,4 @@
-from .TxCollection import TxCollection
+from .tx_collection import TxCollection
 from app.aws.s_three import Collection as S3Collection
 from app.config.S3Config import S3Config
 from app.stac import log_info, log_exception

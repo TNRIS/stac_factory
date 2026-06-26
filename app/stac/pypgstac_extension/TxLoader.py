@@ -4,8 +4,8 @@ from pypgstac.load import Loader
 import psycopg, json
 
 from pystac import Item
-from app.stac.pystac_extension.TxOldCollection import TxOldCollection
-from app.stac.pystac_extension.TxNewCollection import TxNewCollection
+from app.stac.pystac_extension.tx_old_collection import TxOldCollection
+from app.stac.pystac_extension.tx_new_collection import TxNewCollection
 
 from typing import Iterator, Optional
 

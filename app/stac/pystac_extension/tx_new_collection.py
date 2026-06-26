@@ -1,4 +1,4 @@
-from .TxCollection import TxCollection
+from .tx_collection import TxCollection
 from app.aws.s_three import Collection as S3Collection
 from app.stac import log_info, log_exception, stream_handler
 import shapely, pdal, os, json, pystac, requests

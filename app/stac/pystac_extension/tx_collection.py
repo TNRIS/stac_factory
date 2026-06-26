@@ -4,7 +4,7 @@ import json, pystac
 from typing import List
 from app.aws.s_three import Collection as S3Collection, WarehouseClient, Resource
 from app.config.S3Config import S3Config
-from .TxItem import TxItem, build_roles_for
+from .tx_item import TxItem, build_roles_for
 from app.root import ROOT
 
 # Import geographic manipulation libraries
@@ -14,7 +14,7 @@ from app.stac import log_info, log_exception
 from pandas import DataFrame
 
 from app.stac.pystac_extension.file_parsing import file_types
-from app.stac.pystac_extension.TxTypes import TileIndex
+from app.stac.pystac_extension.tx_types import TileIndex
 
 BUILD_TEST_GEOJSON = False
 

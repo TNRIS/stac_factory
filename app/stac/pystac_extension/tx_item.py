@@ -10,7 +10,7 @@ import geopandas as gpd
 from app.stac.pystac_extension.file_parsing import build_roles_for
 from app.root.root import ROOT
 import remotezip, os
-from .TxAsset import TxAsset
+from .tx_asset import TxAsset
 from shapely.geometry import mapping
 
 
