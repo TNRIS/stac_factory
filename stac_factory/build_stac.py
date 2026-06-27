@@ -5,19 +5,15 @@ from modules.tx_pystac import (
     TxNewCollection,
     TxOldCollection,
     TxCatalog,
-    build_roles_for,
+    build_roles_for
 )
 from modules.tx_pystac.tx_types import ContentInput
-from root import ROOT
-from stac_util import log_info
+from root import ROOT, CATALOG_ROOT
+from .stac_util import log_info
 import os, pystac, time, shutil
 from modules.tx_pypgstac import TxLoader
 
 loader = TxLoader()
-temp_storage = (
-    f"{ROOT}/catalog/"  # Don't change this unless you know what it does. It will
-)
-
 # # Register the custom write method
 # stac_io
 
@@ -56,7 +52,7 @@ def build_collection(
     collection_root = ""
     tx_collection: TxNewCollection | TxOldCollection
     s3_collection: S3Collection
-    dest_href = f"{temp_storage}{collection_root}"
+    dest_href = f"{CATALOG_ROOT}{collection_root}"
 
     if isinstance(wh_collection, str):
         collection_root = wh_collection
@@ -127,8 +123,8 @@ def build_collection(
 
 def clean_stash():
     if CLEAN_STASH_FLAG:
-        if os.path.exists(temp_storage):
-            shutil.rmtree(temp_storage)
+        if os.path.exists(CATALOG_ROOT):
+            shutil.rmtree(CATALOG_ROOT)
 
 
 def gen_stac_collection(whc) -> None:
@@ -187,7 +183,7 @@ def gen_stac_collection(whc) -> None:
         collections.append(pystac.read_file(f"{collection}collection.json"))
 
     catalog.add_children(collections)
-    catalog.normalize_and_save(root_href=temp_storage)
+    catalog.normalize_and_save(root_href=CATALOG_ROOT)
     log_info("Done processing.")
 
 
@@ -212,6 +208,6 @@ def gen_this_stac_collection(whc: ContentInput, s3_configuration):
 
         catalog = TxCatalog()
         catalog.add_children([tx_collection])
-        catalog.normalize_and_save(root_href=temp_storage)
+        catalog.normalize_and_save(root_href=str(CATALOG_ROOT))
         dict_items = tx_collection.get_items()
         loader.load_collection_and_items(file=tx_collection, dict_items=dict_items)

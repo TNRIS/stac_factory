@@ -1,10 +1,10 @@
-import json, pystac, geopandas
+import json, pystac, geopandas, os
 from typing import List
 from modules.tx_aws.aws_types import S3Config
 from osgeo import gdal
 from pandas import DataFrame
 
-from root import ROOT
+from root import CITY_BOUNDARIES, COUNTY_BOUNDARIES, TEST_GEOJSON_ROOT
 
 from .tx_item import TxItem
 from .file_parsing import file_types, build_roles_for
@@ -81,9 +81,9 @@ class TxCollection(pystac.Collection):
     def construct_spatial_tags(self):
         # Tag counties
         counties = geopandas.read_file(
-            f"{ROOT}/txgio_extension/county_boundaries.geojson"
+            COUNTY_BOUNDARIES
         )
-        counties_buffer = open(f"{ROOT}/txgio_extension/county_boundaries.geojson")
+        counties_buffer = open(COUNTY_BOUNDARIES)
         counties_dict = json.load(counties_buffer)
         intersections = counties.intersects(self.index.simplify)
         spatial_tags = ""
@@ -95,10 +95,8 @@ class TxCollection(pystac.Collection):
                 )
 
         # Tag cities
-        cities = geopandas.read_file(
-            ROOT / "txgio_extension" / "county_boundaries.geojson"
-        )
-        cities_buffer = open(ROOT / "txgio_extension" / "TX_Cities.json")
+        cities = geopandas.read_file(COUNTY_BOUNDARIES)
+        cities_buffer = open(CITY_BOUNDARIES)
         cities_dict = json.load(cities_buffer)
         intersections2 = cities.intersects(self.index.simplify)
         for i in range(len(intersections2)):
@@ -106,8 +104,11 @@ class TxCollection(pystac.Collection):
                 spatial_tags += f",{cities_dict['objects']['TX_Cities']['geometries'][i]['properties']['name']}"
         try:
             if BUILD_TEST_GEOJSON:
+                path = f"{TEST_GEOJSON_ROOT}/{self.stac_id.split('_')[0]}/items"
+                if not os.path.exists(path):
+                    os.makedirs(path)
                 with open(
-                    f"{ROOT}/testgeojson/{self.collection_name}_testgeom.geojson", "w"
+                    f"{TEST_GEOJSON_ROOT}/{self.collection_name}_testgeom.geojson", "w"
                 ) as f:
                     f.write(self.index.outline)
         except:

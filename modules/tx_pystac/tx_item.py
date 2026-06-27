@@ -1,14 +1,14 @@
-import pystac, shapely, json, pdal, remotezip
+import pystac, shapely, json, pdal, remotezip, os
 from datetime import datetime
 from osgeo import gdal
 from shapely.geometry import mapping
 from typing import List, assert_type
 import geopandas as gpd
 
+from root import TEST_GEOJSON_ROOT
 from .tx_asset import TxAsset
 from .file_parsing import build_roles_for
 from modules.tx_aws.s_three import WarehouseClient, Resource
-from root import ROOT
 from stac_factory.stac_util import log_info, log_exception, stream_handler
 
 
@@ -88,16 +88,16 @@ class TxItem(pystac.Item):
                 tolerance=0.0001, preserve_topology=True
             )  # Defaults to Douglas Peucker, recommended in api for the_geom.
             geometries.append(simplify)
-            # TEST_EXPORT_ITEM = True # Change this to True if you want to have geojson to test with.
-            # if( TEST_EXPORT_ITEM):
-            #     try:
-            #         path = f"{ROOT}/testgeojson/{self.stac_id.split('_')[0]}/items"
-            #         if not os.path.exists(path):
-            #             os.makedirs(path)
-            #         with open(f"{path}/{self.stac_id}_testgeom.geojson", "w") as f:
-            #             f.write(shapely.to_geojson(simplify))
-            #     except:
-            #         log_info("Can't write a test file skipping.")
+            TEST_EXPORT_ITEM = False # Change this to True if you want to have geojson to test with.
+            if( TEST_EXPORT_ITEM):
+                try:
+                    path = f"{TEST_GEOJSON_ROOT}/{self.stac_id.split('_')[0]}/items"
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    with open(f"{path}/{self.stac_id}_testgeom.geojson", "w") as f:
+                        f.write(shapely.to_geojson(simplify))
+                except:
+                    log_info("Can't write a test file skipping.")
             geometries.append(preprocessed_geometry["geometry"][index].bounds)
         else:
             geometries = self.get_geom_by_priority(resources)

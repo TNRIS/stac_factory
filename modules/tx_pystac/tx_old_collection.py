@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas
 
 from .tx_collection import TxCollection
-from root import ROOT
+from root import ROOT, CROSS_WALK
 from modules.tx_aws import Collection as S3Collection
 from modules.tx_aws.aws_types import S3Config
 from stac_factory.stac_util import log_info, log_exception
@@ -84,7 +84,7 @@ class TxOldCollection(TxCollection):
             return coll_api
         else:
             cross_walk = pandas.read_excel(
-                f"{ROOT}/txgio_extension/API-CollectionID-CollectionName-Crosswalk.xlsx",
+                CROSS_WALK
                 ["LCD"],
             )["LCD"]
 
@@ -109,7 +109,7 @@ class TxOldCollection(TxCollection):
             print(e)
 
         cross_walk = pandas.read_excel(
-            "txgio_extension/API-CollectionID-CollectionName-Crosswalk.xlsx", ["LORE"]
+            CROSS_WALK, ["LORE"]
         )["LORE"]
         for i in cross_walk.itertuples():
             if i[8] == name:
