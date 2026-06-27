@@ -1,5 +1,5 @@
 from stac_factory.build_stac import gen_stac_collection
-from config.s3_config import S3Config
+from modules.tx_aws.aws_types import S3Config
 
 whconf = S3Config(
     BUCKET_URL="http://test-gio-data-warehouse.s3-website-us-east-1.amazonaws.com/",

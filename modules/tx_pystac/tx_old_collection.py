@@ -5,7 +5,7 @@ import pandas
 from .tx_collection import TxCollection
 from root import ROOT
 from modules.tx_aws import Collection as S3Collection
-from config.s3_config import S3Config
+from modules.tx_aws.aws_types import S3Config
 from stac_factory.stac_util import log_info, log_exception
 
 

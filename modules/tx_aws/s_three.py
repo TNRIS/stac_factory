@@ -5,7 +5,7 @@ from types_boto3_s3 import Client
 from pathlib import Path
 from pandas import DataFrame
 
-from .path_typing import DataWhPath, ItemPath, AssetPath
+from .aws_types import DataWhPath, ItemPath, AssetPath
 
 
 class Resource:
@@ -24,24 +24,6 @@ class Resource:
         self.size = path.Size
         self.type = Path(self.path).parts[-2]
         self.filename = os.path.splitext(os.path.split(self.path)[1])[0]
-
-    # def get_contents(self):
-    #     gdal.UseExceptions()
-    #     vsicurl_path = f"/vsizip//vsis3/{DATA_WH_CONF.BUCKET}/{self.path}"
-
-    #     try:
-    #         zip_contents = gdal.ReadDirRecursive(vsicurl_path)
-    #         if zip_contents:
-    #             print(f"\nContents of '{vsicurl_path} include:\n")
-    #             for item in zip_contents:
-    #                 print(f"\t- {item}")
-    #         else:
-    #             print(f"No contents found or unable to access in {vsicurl_path}")
-    #     except Exception as e:
-    #         print(f"Error occurred attempting to read contents of {vsicurl_path}")
-    #     else:
-    #         self.contents = zip_contents
-    #         return zip_contents
 
     def __str__(self):
         return f"{self.path}"

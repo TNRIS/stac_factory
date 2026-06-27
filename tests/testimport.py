@@ -1,5 +1,5 @@
 from stac_factory.build_stac import gen_this_stac_collection
-from config.s3_config import S3Config
+from modules.tx_aws.aws_types import S3Config
 from modules.tx_pystac.tx_types import ContentInput, TypeExtent, TypeProvider
 
 DATA_WH_CONF = None

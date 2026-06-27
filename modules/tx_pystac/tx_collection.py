@@ -1,6 +1,6 @@
 import json, pystac, geopandas
 from typing import List
-from config.s3_config import S3Config
+from modules.tx_aws.aws_types import S3Config
 from osgeo import gdal
 from pandas import DataFrame
 
