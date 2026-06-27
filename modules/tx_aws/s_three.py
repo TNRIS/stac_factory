@@ -5,7 +5,7 @@ from types_boto3_s3 import Client
 from pathlib import Path
 from pandas import DataFrame
 
-from app.config.PathTyping import DataWhPath, ItemPath, AssetPath
+from .path_typing import DataWhPath, ItemPath, AssetPath
 
 
 class Resource:

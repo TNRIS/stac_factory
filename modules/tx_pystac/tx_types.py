@@ -1,10 +1,9 @@
 import shapely, json
-
+from typing import TypedDict, Required, NotRequired, Literal, Any
 from geopandas import GeoDataFrame
 from shapely.geometry.base import BaseGeometry
-from app.stac import log_exception
 
-from typing import TypedDict, Required, NotRequired, Literal, Any
+from stac_factory.stac_util import log_exception
 
 
 class TileIndex:

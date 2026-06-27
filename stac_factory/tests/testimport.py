@@ -1,7 +1,6 @@
-from app.stac.build_stac import gen_this_stac_collection
-from app.config.S3Config import S3Config
-from typing import TypedDict, Required
-from app.stac.pystac_extension.tx_types import ContentInput, TypeExtent, TypeProvider
+from stac_factory.build_stac import gen_this_stac_collection
+from config.s3_config import S3Config
+from modules.tx_pystac.tx_types import ContentInput, TypeExtent, TypeProvider
 
 DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None

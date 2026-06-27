@@ -1,20 +1,17 @@
-import json, pystac
-
-
+import json, pystac, geopandas
 from typing import List
-from app.aws.s_three import Collection as S3Collection, WarehouseClient, Resource
-from app.config.S3Config import S3Config
-from .tx_item import TxItem, build_roles_for
-from app.root import ROOT
-
-# Import geographic manipulation libraries
-import geopandas
+from config.s3_config import S3Config
 from osgeo import gdal
-from app.stac import log_info, log_exception
 from pandas import DataFrame
 
-from app.stac.pystac_extension.file_parsing import file_types
-from app.stac.pystac_extension.tx_types import TileIndex
+from root import ROOT
+
+from .tx_item import TxItem
+from .file_parsing import file_types, build_roles_for
+from .tx_types import TileIndex
+
+from modules.tx_aws.s_three import Collection as S3Collection, WarehouseClient, Resource
+from stac_factory.stac_util import log_info, log_exception
 
 BUILD_TEST_GEOJSON = False
 
