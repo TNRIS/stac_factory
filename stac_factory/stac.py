@@ -1,4 +1,4 @@
-from app.stac import gen_stac_catalog, log_exception
+from build_stac import gen_stac_catalog, log_exception
 
 
 def test():

@@ -1,13 +1,12 @@
-from pypgstac.load import Loader, Methods
-from pypgstac.db import PgstacDB
-from pypgstac.load import Loader
 import psycopg, json
 
 from pystac import Item
-from app.stac.pystac_extension.tx_old_collection import TxOldCollection
-from app.stac.pystac_extension.tx_new_collection import TxNewCollection
-
+from pypgstac.load import Loader, Methods
+from pypgstac.db import PgstacDB
 from typing import Iterator, Optional
+
+# Local Imports
+from modules.tx_pystac import TxOldCollection, TxNewCollection
 
 
 class TxLoader(Loader):

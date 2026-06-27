@@ -1,4 +1,4 @@
-from app.config.PathTyping import ItemPath
+from modules.tx_aws import ItemPath
 
 
 class TypeDescriptor(dict):

@@ -1,8 +1,3 @@
-from enum import Enum
-from logging import root
-from typing import List
-
-
 class AssetPath:
     path: str = ""
     type: str = ""

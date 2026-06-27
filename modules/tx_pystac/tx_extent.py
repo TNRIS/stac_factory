@@ -1,6 +1,7 @@
 from typing import Any
-import pystac
 from datetime import datetime
+import pystac
+
 
 
 class TxExtent(pystac.Extent):

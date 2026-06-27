@@ -1,16 +1,17 @@
-from .pystac_extension import build_roles_for
-from .pystac_extension import tx_new_collection
-from .pystac_extension.tx_old_collection import TxOldCollection
-from .pystac_extension.tx_catalog import TxCatalog
-
-from .pypgstac_extension.TxLoader import TxLoader
-from app.stac import log_info
-from app.stac.pystac_extension.tx_types import *
-from pandas import DataFrame
 from multiprocessing import Process, Queue
+from pandas import DataFrame
+from modules.tx_aws import WarehouseClient, Collection as S3Collection
+from modules.tx_pystac import (
+    TxNewCollection,
+    TxOldCollection,
+    TxCatalog,
+    build_roles_for,
+)
+from modules.tx_pystac.tx_types import ContentInput
+from root import ROOT
+from stac_util import log_info
 import os, pystac, time, shutil
-from app.aws.s_three import WarehouseClient, Collection as S3Collection
-from app.root.root import ROOT
+from modules.tx_pypgstac import TxLoader
 
 loader = TxLoader()
 temp_storage = (
@@ -50,10 +51,10 @@ def skipper(collection_root):
 
 def build_collection(
     wh_collection, s3_configuration, q: Queue | None = None
-) -> None | TxOldCollection | tx_new_collection:
+) -> None | TxOldCollection | TxNewCollection:
     wh_client = WarehouseClient(s3_configuration)
     collection_root = ""
-    tx_collection: tx_new_collection | TxOldCollection
+    tx_collection: TxNewCollection | TxOldCollection
     s3_collection: S3Collection
     dest_href = f"{temp_storage}{collection_root}"
 
@@ -80,7 +81,7 @@ def build_collection(
         items = wh_client.get(f"{s3_configuration.ROOT}{collection_root}")
         s3_collection = S3Collection(items)
         if len(items):
-            tx_collection = tx_new_collection(
+            tx_collection = TxNewCollection(
                 wh_collection, s3_collection, s3_configuration
             )
 

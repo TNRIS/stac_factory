@@ -1,10 +1,9 @@
 from .tx_collection import TxCollection
 from app.aws.s_three import Collection as S3Collection
 from app.stac import log_info, log_exception, stream_handler
-import shapely, pdal, os, json, pystac, requests
-from app.config.S3Config import S3Config
 from app.aws.s_three import Collection as S3Collection
 from datetime import datetime
+import pystac
 
 
 class TxNewCollection(TxCollection):

@@ -1,4 +1,3 @@
-from multiprocessing import Process
 import shapely, json
 
 from geopandas import GeoDataFrame

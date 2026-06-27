@@ -1,17 +1,14 @@
-from typing import Any, List, assert_type
-from zipfile import ZipInfo
-import pystac, shapely, json
-from datetime import datetime
-from app.stac import log_info, log_exception, stream_handler
-from app.aws.s_three import WarehouseClient, Resource, Collection as S3Collection
-from osgeo import gdal
-import pdal
-import geopandas as gpd
-from app.stac.pystac_extension.file_parsing import build_roles_for
-from app.root.root import ROOT
-import remotezip, os
 from .tx_asset import TxAsset
+from app.aws.s_three import WarehouseClient, Resource
+from app.root.root import ROOT
+from app.stac import log_info, log_exception, stream_handler
+from app.stac.pystac_extension.file_parsing import build_roles_for
+from datetime import datetime
+from osgeo import gdal
 from shapely.geometry import mapping
+from typing import List, assert_type
+import geopandas as gpd
+import pystac, shapely, json, pdal, remotezip
 
 
 class ItemException(Exception):

@@ -1,14 +1,9 @@
-from ctypes import Array
-import boto3
-from osgeo import gdal
-from typing import List, Dict
-from types_boto3_s3 import Client
-from types_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
-from pathlib import Path
-import os
+import boto3, os
 from typing import List
-from pandas import DataFrame
+from types_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
+from types_boto3_s3 import Client
 from pathlib import Path
+from pandas import DataFrame
 
 from app.config.PathTyping import DataWhPath, ItemPath, AssetPath
 

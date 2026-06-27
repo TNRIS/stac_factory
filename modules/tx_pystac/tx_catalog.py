@@ -1,5 +1,4 @@
-import pystac
-import typing
+import pystac, typing
 
 
 class TxCatalog(pystac.Catalog):
