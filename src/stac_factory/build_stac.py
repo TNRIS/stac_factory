@@ -195,10 +195,10 @@ def gen_this_stac_collection(whc: ContentInput, s3_configuration):
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
     clean_stash()
-    content = loader.get_content(whc.get("id"))
-    if content:
-        # Exists so stash fastapi Metadata. (Only ran on edgecase we need to rebuild geometry or add items.)
-        whc = content
+    # content = loader.get_content(whc.get("id"))
+    # if content:
+    #     # Exists so stash fastapi Metadata. (Only ran on edgecase we need to rebuild geometry or add items.)
+    #     whc = content
 
     tx_collection = build_collection(whc, s3_configuration)
     if tx_collection:
@@ -213,4 +213,4 @@ def gen_this_stac_collection(whc: ContentInput, s3_configuration):
         catalog.add_children([tx_collection])
         catalog.normalize_and_save(root_href=str(CATALOG_ROOT))
         dict_items = tx_collection.get_items()
-        loader.load_collection_and_items(file=tx_collection, dict_items=dict_items)
+        loader.load_vanilla(file=tx_collection, dict_items=dict_items)
