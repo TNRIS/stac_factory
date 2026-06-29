@@ -1,7 +1,7 @@
 [project]
 name = "stac_factory"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.9.0"
+description = "A Stac Factory for TxGIO"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "."}
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
