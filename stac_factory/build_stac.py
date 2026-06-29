@@ -52,17 +52,17 @@ def build_collection(
     collection_root = ""
     tx_collection: TxNewCollection | TxOldCollection
     s3_collection: S3Collection
-    dest_href = f"{CATALOG_ROOT}{collection_root}"
-
+    dest_href=""
     if isinstance(wh_collection, str):
         collection_root = wh_collection
+        dest_href = f"{CATALOG_ROOT}/{collection_root}"
+
         if skipper(collection_root):
             return
         if os.path.exists(dest_href):
             log_info(f"Skipping {collection_root} because it exists.")
 
-            if q:
-                q.put(dest_href)
+            q.put(dest_href)
             return None
         items = wh_client.get(f"{s3_configuration.ROOT}{collection_root}")
         s3_collection = S3Collection(items)
@@ -72,6 +72,7 @@ def build_collection(
             )
     else:
         collection_root = wh_collection["id"]
+        dest_href = f"{CATALOG_ROOT}{collection_root}"
         if skipper(collection_root):
             return
         items = wh_client.get(f"{s3_configuration.ROOT}{collection_root}")
@@ -111,13 +112,13 @@ def build_collection(
     try:
         log_info(f"Validating {collection_root}")
         tx_collection.validate_all()
+        tx_collection.save(dest_href=dest_href)
         log_info(f"Done validating {collection_root}")
     except Exception as e:
         log_info(f"Invalid document {collection_root}")
         return None
 
-    if q:
-        q.put(dest_href)
+    q.put(dest_href)
     return tx_collection
 
 
@@ -180,7 +181,7 @@ def gen_stac_collection(whc) -> None:
 
     while not q.empty():
         collection = q.get()
-        collections.append(pystac.read_file(f"{collection}collection.json"))
+        collections.append(pystac.read_file(f"{collection}/collection.json"))
 
     catalog.add_children(collections)
     catalog.normalize_and_save(root_href=CATALOG_ROOT)

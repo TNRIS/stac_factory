@@ -18,10 +18,11 @@
             "name": "debug testbulk",
             "type": "debugpy",
             "request": "launch",
-            "program": "stac_factory/tests/testbulk.py",
+            "module": "tests.testbulk",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/.venv/bin/python",
-            "cwd": "/stac_generator"
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true
         }
     ]
 }
