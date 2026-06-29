@@ -1,17 +1,22 @@
 import json, pystac, geopandas, os
 from typing import List
-from modules.tx_aws.aws_types import S3Config
 from osgeo import gdal
 from pandas import DataFrame
 
-from root import CITY_BOUNDARIES, COUNTY_BOUNDARIES, TEST_GEOJSON_ROOT
+# Local imports
+from stac_factory.root import CITY_BOUNDARIES, COUNTY_BOUNDARIES, TEST_GEOJSON_ROOT
 
 from .tx_item import TxItem
 from .file_parsing import file_types, build_roles_for
 from .tx_types import TileIndex
 
-from modules.tx_aws.s_three import Collection as S3Collection, WarehouseClient, Resource
-from stac_factory.stac_util import log_info, log_exception
+# AWS Imports
+from .. import (
+    Collection as S3Collection,
+    WarehouseClient,
+    S3Config
+)
+from ..util import log_info, log_exception
 
 BUILD_TEST_GEOJSON = False
 
@@ -80,9 +85,7 @@ class TxCollection(pystac.Collection):
 
     def construct_spatial_tags(self):
         # Tag counties
-        counties = geopandas.read_file(
-            COUNTY_BOUNDARIES
-        )
+        counties = geopandas.read_file(COUNTY_BOUNDARIES)
         counties_buffer = open(COUNTY_BOUNDARIES)
         counties_dict = json.load(counties_buffer)
         intersections = counties.intersects(self.index.simplify)

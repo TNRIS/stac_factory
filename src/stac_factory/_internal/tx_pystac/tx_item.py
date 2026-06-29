@@ -5,11 +5,11 @@ from shapely.geometry import mapping
 from typing import List, assert_type
 import geopandas as gpd
 
-from root import TEST_GEOJSON_ROOT
+from stac_factory.root import TEST_GEOJSON_ROOT
 from .tx_asset import TxAsset
 from .file_parsing import build_roles_for
-from modules.tx_aws.s_three import WarehouseClient, Resource
-from stac_factory.stac_util import log_info, log_exception, stream_handler
+from ..tx_aws.s_three import WarehouseClient, Resource
+from ..util import log_info, log_exception
 
 
 class ItemException(Exception):

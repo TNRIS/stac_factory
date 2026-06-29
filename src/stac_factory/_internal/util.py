@@ -1,12 +1,12 @@
 from logging import Logger, FileHandler, StreamHandler, getLogger, DEBUG
 import sys
 
-file_handler = FileHandler(filename="stac.log")
+# file_handler = FileHandler(filename="stac.log")
 stream_handler = StreamHandler(sys.stdout)
 
 logger: Logger = getLogger("stac")
 logger.addHandler(StreamHandler(sys.stdout))
-logger.addHandler(file_handler)
+# logger.addHandler(file_handler)
 logger.level = DEBUG
 
 

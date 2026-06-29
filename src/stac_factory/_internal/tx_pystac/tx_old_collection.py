@@ -2,11 +2,12 @@ import pystac, requests
 from datetime import datetime
 import pandas
 
+from stac_factory.root import ROOT, CROSS_WALK
 from .tx_collection import TxCollection
-from root import ROOT, CROSS_WALK
-from modules.tx_aws import Collection as S3Collection
-from modules.tx_aws.aws_types import S3Config
-from stac_factory.stac_util import log_info, log_exception
+
+# AWS imports
+from .. import Collection as S3Collection, S3Config
+from ..util import log_info, log_exception
 
 
 class TxOldCollection(TxCollection):
@@ -84,8 +85,7 @@ class TxOldCollection(TxCollection):
             return coll_api
         else:
             cross_walk = pandas.read_excel(
-                CROSS_WALK
-                ["LCD"],
+                CROSS_WALK["LCD"],
             )["LCD"]
 
             for i in cross_walk.itertuples():
@@ -108,9 +108,7 @@ class TxOldCollection(TxCollection):
         except Exception as e:
             print(e)
 
-        cross_walk = pandas.read_excel(
-            CROSS_WALK, ["LORE"]
-        )["LORE"]
+        cross_walk = pandas.read_excel(CROSS_WALK, ["LORE"])["LORE"]
         for i in cross_walk.itertuples():
             if i[8] == name:
                 coll_api_url = f'{self.settings["API_URL"]}/api/v1/historical/collections?collection_id={i.collection_id}'

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[0]
-CONFIG = ROOT / "stac_factory" / "config"
+CONFIG = ROOT / "config"
 COUNTY_BOUNDARIES = CONFIG / "county_boundaries.geojson"
 CITY_BOUNDARIES = CONFIG / "TX_Cities.json"
 CROSS_WALK = CONFIG / "API-CollectionID-CollectionName-Crosswalk.xlsx"

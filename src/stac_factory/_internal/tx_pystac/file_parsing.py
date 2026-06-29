@@ -1,6 +1,3 @@
-from modules.tx_aws import ItemPath
-
-
 class TypeDescriptor(dict):
     """
     Docstring for TypeDescriptor
@@ -87,7 +84,7 @@ file_types: dict[str, TypeDescriptor] = {
 
 
 # Question, Do I use zip imei type? Or the file inside the zip? Left with zip imei type for now due to more questions if I go with inside file.
-def build_roles_for(resource: ItemPath) -> list[str]:
+def build_roles_for(resource) -> list[str]:
     if resource.ext in file_types.keys():
         roles = list(file_types[resource.ext].values())
         roles.append(resource.ext)

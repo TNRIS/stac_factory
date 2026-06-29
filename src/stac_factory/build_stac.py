@@ -1,17 +1,19 @@
 from multiprocessing import Process, Queue
 from pandas import DataFrame
-from modules.tx_aws import WarehouseClient, Collection as S3Collection
-from modules.tx_pystac import (
+import os, pystac, time, shutil
+
+from .root import ROOT, CATALOG_ROOT
+from ._internal.tx_pystac.tx_types import ContentInput
+from ._internal.util import log_info
+from ._internal import (
     TxNewCollection,
     TxOldCollection,
+    TxLoader,
     TxCatalog,
-    build_roles_for
+    build_roles_for,
+    WarehouseClient,
+    Collection as S3Collection
 )
-from modules.tx_pystac.tx_types import ContentInput
-from root import ROOT, CATALOG_ROOT
-from .stac_util import log_info
-import os, pystac, time, shutil
-from modules.tx_pypgstac import TxLoader
 
 loader = TxLoader()
 # # Register the custom write method
@@ -52,7 +54,7 @@ def build_collection(
     collection_root = ""
     tx_collection: TxNewCollection | TxOldCollection
     s3_collection: S3Collection
-    dest_href=""
+    dest_href = ""
     if isinstance(wh_collection, str):
         collection_root = wh_collection
         dest_href = f"{CATALOG_ROOT}/{collection_root}"
@@ -117,8 +119,8 @@ def build_collection(
     except Exception as e:
         log_info(f"Invalid document {collection_root}")
         return None
-
-    q.put(dest_href)
+    if q:
+        q.put(dest_href)
     return tx_collection
 
 
