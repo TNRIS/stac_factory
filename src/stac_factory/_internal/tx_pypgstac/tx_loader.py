@@ -5,6 +5,7 @@ from pypgstac.load import Loader, Methods
 from pypgstac.db import PgstacDB
 from typing import Iterator, Optional
 
+
 class TxLoader(Loader):
     """
     Docstring for TxLoader
@@ -81,3 +82,19 @@ class TxLoader(Loader):
         for i in dict_items:
             items.append(i.to_dict())
         super().load_items(iter(items))
+
+    def load_vanilla(
+        self,
+        file,
+        dict_items: Iterator[Item],
+        insert_mode: Optional[Methods] = Methods.upsert,
+    ) -> None:
+        # Load Collections
+        collections = iter([json.dumps(file.to_dict())])
+        super().load_collections(collections, insert_mode)
+
+        # Load Items
+        items = []
+        for i in dict_items:
+            items.append(i.to_dict())
+        super().load_items(iter(items), insert_mode=Methods.upsert)

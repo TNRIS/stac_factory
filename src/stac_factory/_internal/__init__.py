@@ -74,8 +74,5 @@ _types = [
 # Default export
 __all__ = (
     ["tx_aws", "tx_pypgstac", "tx_pystac"],
-    _tx_aws
-    + _tx_pypgstac
-    + _tx_pystac
-    + _types
+    _tx_aws + _tx_pypgstac + _tx_pystac + _types,
 )

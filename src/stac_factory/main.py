@@ -12,10 +12,15 @@ from ._internal import (
     TxCatalog,
     build_roles_for,
     WarehouseClient,
-    Collection as S3Collection
+    Collection as S3Collection,
 )
 
+# Toggle this to True in order to rebuild the catalog from scratch.
+SKIP_KNOWN_COLLECTIONS_FLAG: bool = True  # Set this to True.
+CLEAN_STASH_FLAG = True
+
 loader = TxLoader()
+
 # # Register the custom write method
 # stac_io
 
@@ -23,10 +28,6 @@ loader = TxLoader()
 class TestException(Exception):
     pass
 
-
-# Toggle this to True in order to rebuild the catalog from scratch.
-SKIP_KNOWN_COLLECTIONS_FLAG: bool = True  # Set this to True.
-CLEAN_STASH_FLAG = True
 
 wh_client: WarehouseClient
 
@@ -93,7 +94,7 @@ def build_collection(
         return None
 
     for asset in s3_collection.paths.ASSETS:
-        roles = build_roles_for(asset)
+        roles = build_roles_for(asset, s3_configuration)
         if asset.type == "index":
             passet = pystac.Asset(
                 href=asset.path,
@@ -195,10 +196,10 @@ def gen_this_stac_collection(whc: ContentInput, s3_configuration):
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
     clean_stash()
-    content = loader.get_content(whc.get("id"))
-    if content:
-        # Exists so stash fastapi Metadata. (Only ran on edgecase we need to rebuild geometry or add items.)
-        whc = content
+    # content = loader.get_content(whc.get("id"))
+    # if content:
+    #     # Exists so stash fastapi Metadata. (Only ran on edgecase we need to rebuild geometry or add items.)
+    #     whc = content
 
     tx_collection = build_collection(whc, s3_configuration)
     if tx_collection:
@@ -213,4 +214,4 @@ def gen_this_stac_collection(whc: ContentInput, s3_configuration):
         catalog.add_children([tx_collection])
         catalog.normalize_and_save(root_href=str(CATALOG_ROOT))
         dict_items = tx_collection.get_items()
-        loader.load_collection_and_items(file=tx_collection, dict_items=dict_items)
+        loader.load_vanilla(file=tx_collection, dict_items=dict_items)
