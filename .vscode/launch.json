@@ -8,20 +8,21 @@
             "name": "debug testimport",
             "type": "debugpy",
             "request": "launch",
-            "program": "testimport.py",
+            "module": "tests.testimport",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/.venv/bin/python",
-            "cwd": "/stac_generator",
+            "cwd": "${workspaceFolder}",
             "justMyCode": true
         },
         {
             "name": "debug testbulk",
             "type": "debugpy",
             "request": "launch",
-            "program": "testbulk.py",
+            "module": "tests.testbulk",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/.venv/bin/python",
-            "cwd": "/stac_generator"
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true
         }
     ]
 }

@@ -5,7 +5,7 @@
     "name": "stac_factory-devcontainer",
     // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
     "build": {
-        "dockerfile": "../Dockerfile",
+        "dockerfile": "../config/Dockerfile",
         "context": "."
     },
     "mounts": [
