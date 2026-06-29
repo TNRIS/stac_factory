@@ -6,7 +6,7 @@ from pypgstac.db import PgstacDB
 from typing import Iterator, Optional
 
 # Local Imports
-from modules.tx_pystac import TxOldCollection, TxNewCollection
+from extensions.tx_pystac import TxOldCollection, TxNewCollection
 
 
 class TxLoader(Loader):

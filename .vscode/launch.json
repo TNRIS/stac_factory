@@ -23,6 +23,19 @@
             "python": "${workspaceFolder}/.venv/bin/python",
             "cwd": "${workspaceFolder}",
             "justMyCode": true
+        },
+        {   
+            "name": "Debug as package (module mode)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.main",   // <- your entry module
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "justMyCode": true
         }
+            
+            
     ]
 }

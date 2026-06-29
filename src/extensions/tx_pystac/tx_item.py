@@ -8,8 +8,8 @@ import geopandas as gpd
 from root import TEST_GEOJSON_ROOT
 from .tx_asset import TxAsset
 from .file_parsing import build_roles_for
-from modules.tx_aws.s_three import WarehouseClient, Resource
-from stac_factory.stac_util import log_info, log_exception, stream_handler
+from extensions.tx_aws.s_three import WarehouseClient, Resource
+from src.stac_util import log_info, log_exception, stream_handler
 
 
 class ItemException(Exception):
