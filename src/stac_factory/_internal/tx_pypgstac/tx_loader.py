@@ -5,10 +5,6 @@ from pypgstac.load import Loader, Methods
 from pypgstac.db import PgstacDB
 from typing import Iterator, Optional
 
-# Local Imports
-from _internal.tx_pystac import TxOldCollection, TxNewCollection
-
-
 class TxLoader(Loader):
     """
     Docstring for TxLoader
@@ -67,7 +63,7 @@ class TxLoader(Loader):
 
     def load_collection_and_items(
         self,
-        file: TxOldCollection | TxNewCollection,
+        file,
         dict_items: Iterator[Item],
         insert_mode: Optional[Methods] = Methods.upsert,
     ) -> None:

@@ -1,11 +1,11 @@
-from src.build_stac import gen_this_stac_collection
-from _internal.tx_aws.aws_types import S3Config
-from _internal.tx_pystac.tx_types import ContentInput, TypeExtent, TypeProvider
+from stac_factory import S3Config, gen_this_stac_collection
+from stac_factory import tx_types
+from stac_factory._internal import TypeExtent
 
 DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None
 
-test_brown = ContentInput(
+test_brown = tx_types.ContentInput(
     **{
         "id": "stratmap-2019-50cm-brown-county",
         "title": "provided_title",
@@ -24,13 +24,13 @@ test_brown = ContentInput(
         "txgio:file_type": "provided file_type",
         "txgio:resolution": "provided resolution",
         "providers": [
-            TypeProvider(
+            tx_types.TypeProvider(
                 name="United States Department of the Interior",
                 description="United States Department of the Interior (DOI) data can be accessed at NULL. For questions or comments please reach out to the data contact at  or visit their website at https://www.doi.gov/",
                 url="https://www.doi.gov/",
                 roles=[],
             ),
-            TypeProvider(
+            tx_types.TypeProvider(
                 name="United States Army Corps of Engineers",
                 description="United States Army Corps of Engineers (USACE) data can be accessed at NULL. For questions or comments please reach out to the data contact at  or visit their website at https://www.usace.army.mil",
                 url="https://www.usace.army.mil",

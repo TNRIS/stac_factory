@@ -3,7 +3,7 @@ from typing import TypedDict, Required, NotRequired, Literal, Any
 from geopandas import GeoDataFrame
 from shapely.geometry.base import BaseGeometry
 
-from _internal.util import log_exception
+from ..util import log_exception
 
 
 class TileIndex:
