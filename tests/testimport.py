@@ -1,6 +1,6 @@
 from src.build_stac import gen_this_stac_collection
-from extensions.tx_aws.aws_types import S3Config
-from extensions.tx_pystac.tx_types import ContentInput, TypeExtent, TypeProvider
+from _internal.tx_aws.aws_types import S3Config
+from _internal.tx_pystac.tx_types import ContentInput, TypeExtent, TypeProvider
 
 DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None

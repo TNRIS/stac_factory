@@ -4,9 +4,9 @@ import pandas
 
 from .tx_collection import TxCollection
 from root import ROOT, CROSS_WALK
-from extensions.tx_aws import Collection as S3Collection
-from extensions.tx_aws.aws_types import S3Config
-from src.stac_util import log_info, log_exception
+from _internal.tx_aws import Collection as S3Collection
+from _internal.tx_aws.aws_types import S3Config
+from _internal.util import log_info, log_exception
 
 
 class TxOldCollection(TxCollection):

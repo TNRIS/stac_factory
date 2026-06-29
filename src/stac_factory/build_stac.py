@@ -1,18 +1,17 @@
 from multiprocessing import Process, Queue
 from pandas import DataFrame
-from extensions.tx_aws import WarehouseClient, Collection as S3Collection
-from extensions.tx_pystac import (
+from _internal.tx_aws import WarehouseClient, Collection as S3Collection
+from _internal.tx_pystac import (
     TxNewCollection,
     TxOldCollection,
     TxCatalog,
     build_roles_for
 )
-from extensions.tx_pystac.tx_types import ContentInput
-from 
+from _internal.tx_pystac.tx_types import ContentInput
 from root import ROOT, CATALOG_ROOT
-from .stac_util import log_info
+from _internal.util import log_info
 import os, pystac, time, shutil
-from extensions.tx_pypgstac import TxLoader
+from _internal.tx_pypgstac import TxLoader
 
 loader = TxLoader()
 # # Register the custom write method

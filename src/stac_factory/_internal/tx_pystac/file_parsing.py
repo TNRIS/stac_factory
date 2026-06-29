@@ -1,4 +1,4 @@
-from extensions.tx_aws import ItemPath
+from _internal.tx_aws import ItemPath
 
 
 class TypeDescriptor(dict):

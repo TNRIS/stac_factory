@@ -1,6 +1,6 @@
 import json, pystac, geopandas, os
 from typing import List
-from extensions.tx_aws.aws_types import S3Config
+from _internal.tx_aws.aws_types import S3Config
 from osgeo import gdal
 from pandas import DataFrame
 
@@ -10,8 +10,8 @@ from .tx_item import TxItem
 from .file_parsing import file_types, build_roles_for
 from .tx_types import TileIndex
 
-from extensions.tx_aws.s_three import Collection as S3Collection, WarehouseClient, Resource
-from src.stac_util import log_info, log_exception
+from _internal.tx_aws.s_three import Collection as S3Collection, WarehouseClient, Resource
+from _internal.util import log_info, log_exception
 
 BUILD_TEST_GEOJSON = False
 

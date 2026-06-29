@@ -2,8 +2,8 @@ import pystac
 from datetime import datetime
 
 from .tx_collection import TxCollection
-from extensions.tx_aws.s_three import Collection as S3Collection
-from src.stac_util import log_info, log_exception, stream_handler
+from _internal.tx_aws.s_three import Collection as S3Collection
+from _internal.util import log_info, log_exception, stream_handler
 
 
 class TxNewCollection(TxCollection):
