@@ -12,10 +12,15 @@ from ._internal import (
     TxCatalog,
     build_roles_for,
     WarehouseClient,
-    Collection as S3Collection
+    Collection as S3Collection,
 )
 
+# Toggle this to True in order to rebuild the catalog from scratch.
+SKIP_KNOWN_COLLECTIONS_FLAG: bool = True  # Set this to True.
+CLEAN_STASH_FLAG = True
+
 loader = TxLoader()
+
 # # Register the custom write method
 # stac_io
 
@@ -23,10 +28,6 @@ loader = TxLoader()
 class TestException(Exception):
     pass
 
-
-# Toggle this to True in order to rebuild the catalog from scratch.
-SKIP_KNOWN_COLLECTIONS_FLAG: bool = True  # Set this to True.
-CLEAN_STASH_FLAG = True
 
 wh_client: WarehouseClient
 
@@ -93,7 +94,7 @@ def build_collection(
         return None
 
     for asset in s3_collection.paths.ASSETS:
-        roles = build_roles_for(asset)
+        roles = build_roles_for(asset, s3_configuration)
         if asset.type == "index":
             passet = pystac.Asset(
                 href=asset.path,

@@ -1,3 +1,13 @@
+from .. import S3Config
+from ..util import log_info
+from osgeo import gdal
+from pathlib import Path
+
+
+class FileParseException(Exception):
+    pass
+
+
 class TypeDescriptor(dict):
     """
     Docstring for TypeDescriptor
@@ -72,6 +82,16 @@ file_types: dict[str, TypeDescriptor] = {
         "application/msword",
         "metadata",
     ),
+    ".prj": TypeDescriptor(
+        "Projection definition for ESRI Shapefile",
+        "text/plain",
+        "metadata",
+    ),
+    ".cpg": TypeDescriptor(
+        "Character encoding definition for ESRI Shapefile",
+        "text/plain",
+        "metadata",
+    ),
     ".sid": TypeDescriptor("MrSID raster image", "image/x-mrsid", "data"),
     ".zip": TypeDescriptor("Zip archive", "application/zip", "data"),
     ".tif": TypeDescriptor("Tif image", "image/tiff", "data"),
@@ -80,17 +100,54 @@ file_types: dict[str, TypeDescriptor] = {
     ".jp2": TypeDescriptor("Raster Image file", "image/jp2", "data"),
     ".tif": TypeDescriptor("GeoTIFF raster image", "image/tiff", "data"),
     ".jpg": TypeDescriptor("JPEG raster image", "image/jpeg", "data"),
+    ".shp": TypeDescriptor(
+        "ESRI Shapefile geometry data",
+        "application/x-shapefile",
+        "data",
+    ),
+    ".dbf": TypeDescriptor(
+        "dBase attribute table for ESRI Shapefile",
+        "application/vnd.dbase",
+        "data",
+    ),
+    ".shx": TypeDescriptor(
+        "ESRI Shapefile geometry index",
+        "application/octet-stream",
+        "data",
+    ),
 }
 
 
-# Question, Do I use zip imei type? Or the file inside the zip? Left with zip imei type for now due to more questions if I go with inside file.
-def build_roles_for(resource) -> list[str]:
-    if resource.ext in file_types.keys():
+def build_roles_for(resource, whconfig: S3Config) -> list[str]:
+    zip_roles: list[str] = []
+    if resource.ext == ".zip":
+        try:
+            # Was told maybe they'd have file type info after the underscore. So gonna check.
+            postzip = resource.fname.split("_")[-1]
+            maybeftype = f".{postzip.removesuffix('.zip')}"
+            if maybeftype in file_types:
+                zip_roles.append(maybeftype)
+            else:
+                # Try to deduce from the files inside.
+                vsi_path = f"/vsizip//vsicurl/{whconfig.BUCKET_URL}{resource.path}"
+                dirs = gdal.listdir(vsi_path) or []
+
+                for d in dirs:
+                    if hasattr(d, "name") and isinstance(d.name, str):
+                        path = Path(d.name)
+                        ext = "".join(path.suffixes)
+                        if ext in file_types:
+                            zip_roles.append(ext)
+        except FileParseException:
+            log_info(f"Error trying to deduce the zip filetype for {resource.fname}")
+
+    if resource.ext in file_types:
         roles = list(file_types[resource.ext].values())
         roles.append(resource.ext)
         roles.append(resource.type)
-        return roles
+        roles.extend(zip_roles)
+        return list(dict.fromkeys(roles))
     else:
-        raise Exception(
+        raise ValueError(
             f"Filetype {resource.ext} not found for stac_items in: {resource.path}"
         )

@@ -1,5 +1,4 @@
 import json, pystac, geopandas, os
-from typing import List
 from osgeo import gdal
 from pandas import DataFrame
 
@@ -11,11 +10,7 @@ from .file_parsing import file_types, build_roles_for
 from .tx_types import TileIndex
 
 # AWS Imports
-from .. import (
-    Collection as S3Collection,
-    WarehouseClient,
-    S3Config
-)
+from .. import Collection as S3Collection, WarehouseClient, S3Config
 from ..util import log_info, log_exception
 
 BUILD_TEST_GEOJSON = False
@@ -41,7 +36,7 @@ class TxCollection(pystac.Collection):
 
     def __init__(
         self,
-        data_wh_configuration,
+        data_wh_configuration: S3Config,
         s3_collection,
         collection_name,
         stac_extensions,
@@ -128,9 +123,7 @@ class TxCollection(pystac.Collection):
             vals[val[0] - 1] = vals[val[0] - 1].strip()
         return vals
 
-    def add_stac_items(
-        self, resources: List[Resource]
-    ) -> pystac.Item | pystac.STACObject | None:
+    def add_stac_items(self, resources) -> pystac.Item | pystac.STACObject | None:
         """
         Docstring for add_stac_items
 
@@ -176,7 +169,7 @@ class TxCollection(pystac.Collection):
             if item.ext == ".zip":
                 title = f"{title}-{item.type}"
 
-            roles = build_roles_for(resource=item)
+            roles = build_roles_for(resource=item, whconfig=self.data_wh_configuration)
 
             asset_item = pystac.ItemAssetDefinition(
                 {

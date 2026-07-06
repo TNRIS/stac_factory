@@ -10,6 +10,7 @@ from .tx_asset import TxAsset
 from .file_parsing import build_roles_for
 from ..tx_aws.s_three import WarehouseClient, Resource
 from ..util import log_info, log_exception
+from .. import S3Config
 
 
 class ItemException(Exception):
@@ -29,7 +30,7 @@ class TxItem(pystac.Item):
         collection_name: str,
         preprocessed_geometry: dict | None,
         resolution: str | None,
-        data_wh_configuration,
+        data_wh_configuration: S3Config,
     ):
         """
         TxItem Constructor
@@ -45,6 +46,7 @@ class TxItem(pystac.Item):
         elif not spatial_reference:
             spatial_reference = "EPSG:4326"
         self.spatial_reference = spatial_reference
+        self.data_wh_configuration = data_wh_configuration
         self.wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
         self.stac_id = f"{collection_name}_{resources[0].index}"
         self.kwargs = gdal.InfoOptions(allMetadata=True, format="json", stats=True)
@@ -88,8 +90,10 @@ class TxItem(pystac.Item):
                 tolerance=0.0001, preserve_topology=True
             )  # Defaults to Douglas Peucker, recommended in api for the_geom.
             geometries.append(simplify)
-            TEST_EXPORT_ITEM = False # Change this to True if you want to have geojson to test with.
-            if( TEST_EXPORT_ITEM):
+
+            # Change this to True if you want to have geojson to test with.
+            TEST_EXPORT_ITEM = False
+            if TEST_EXPORT_ITEM:
                 try:
                     path = f"{TEST_GEOJSON_ROOT}/{self.stac_id.split('_')[0]}/items"
                     if not os.path.exists(path):
@@ -104,7 +108,7 @@ class TxItem(pystac.Item):
 
         for resource in resources:
             if resource.index == tile_id:
-                roles = build_roles_for(resource)
+                roles = build_roles_for(resource, self.data_wh_configuration)
 
                 asset = TxAsset(
                     resource,
