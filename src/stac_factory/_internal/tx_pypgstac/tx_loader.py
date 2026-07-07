@@ -4,6 +4,7 @@ from pystac import Item
 from pypgstac.load import Loader, Methods
 from pypgstac.db import PgstacDB
 from typing import Iterator, Optional
+from ..util import log_info
 
 
 class TxLoader(Loader):
@@ -90,6 +91,7 @@ class TxLoader(Loader):
         insert_mode: Optional[Methods] = Methods.upsert,
     ) -> None:
         # Load Collections
+        log_info("Beginning collection loading")
         collections = iter([json.dumps(file.to_dict())])
         super().load_collections(collections, insert_mode)
 
@@ -97,4 +99,5 @@ class TxLoader(Loader):
         items = []
         for i in dict_items:
             items.append(i.to_dict())
+        log_info("Beginning items loading")
         super().load_items(iter(items), insert_mode=Methods.upsert)
