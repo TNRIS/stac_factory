@@ -59,7 +59,6 @@ class DataWhPath:
     CATALOGUED_STATUS: str = ""  # I don't worry about uncatalogued data at the moment.
     HISTORIC_STATUS: str = ""
     COLLECTIONS_ROOT: str = ""
-    COLLECTION_ROOT: str = ""
     ASSETS_ROOT = "assets"
     ITEMS_ROOT = "items"
     ASSETS = None
@@ -71,7 +70,6 @@ class DataWhPath:
         catalog_status,
         historic_status,
         collections_root,
-        collection_root,
         assets_root,
         items_root,
         assets,
@@ -83,7 +81,6 @@ class DataWhPath:
         )
         self.HISTORIC_STATUS = historic_status
         self.COLLECTIONS_ROOT = collections_root
-        self.COLLECTION_ROOT = collection_root
         self.ASSETS_ROOT = assets_root
         self.ITEMS_ROOT = items_root
         self.ASSETS = assets
@@ -91,14 +88,31 @@ class DataWhPath:
 
 
 class S3Config:
-    BUCKET_URL: str = ""
+    """
+    Leading and trailing slashes are stripped by default to prevent accidental
+    absolute-path behavior when constructing S3 object paths.
+    Disable only if you are certain leading slashes are required.
+    """
+
+    def _strip(self, path: str) -> str:
+        return path.strip("/")
 
     # Params are overridable in constructor.
     def __init__(
-        self, BUCKET_URL, BUCKET="", ROOT="", ARCHIVE_EXTENSION="", COLLECTION_ROOT=""
+        self,
+        BUCKET_URL: str = "",
+        BUCKET: str = "",
+        ROOT: str = "",
+        ARCHIVE_EXTENSION: str = "",
+        strip_slashes: bool = True,
     ):
-        self.BUCKET_URL = BUCKET_URL
-        self.BUCKET = BUCKET
-        self.ROOT = ROOT
+        if strip_slashes:
+            self.BUCKET_URL = self._strip(BUCKET_URL)
+            self.BUCKET = self._strip(BUCKET)
+            self.ROOT = self._strip(ROOT)
+        else:
+            self.BUCKET_URL = BUCKET_URL
+            self.BUCKET = BUCKET
+            self.ROOT = ROOT
+
         self.ARCHIVE_EXTENSION = ARCHIVE_EXTENSION
-        self.COLLECTION_ROOT = COLLECTION_ROOT
