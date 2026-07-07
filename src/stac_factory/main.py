@@ -210,8 +210,16 @@ def gen_this_stac_collection(whc: ContentInput, s3_configuration):
             log_info(f"Cannot validate {whc.id}")
             return
 
+        log_info("Constructing catalog.")
         catalog = TxCatalog()
+        log_info("Done constructing catalog starting to add items")
         catalog.add_children([tx_collection])
+        log_info("Done adding items.")
         catalog.normalize_and_save(root_href=str(CATALOG_ROOT))
+
+        log_info("Done normalizing and saving Getting items")
         dict_items = tx_collection.get_items()
+
+        log_info("Done getting items. Calling pypgstac loader")
         loader.load_vanilla(file=tx_collection, dict_items=dict_items)
+        log_info("Done calling pypgstac loader and done with program. SUCCESS")
