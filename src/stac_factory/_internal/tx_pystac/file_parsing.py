@@ -3,10 +3,6 @@ from osgeo import gdal
 from pathlib import Path
 
 
-class FileParseException(Exception):
-    pass
-
-
 class TypeDescriptor(dict):
     """
     Docstring for TypeDescriptor
@@ -155,10 +151,8 @@ class RoleBuilder:
         if resource.ext == ".zip":
             try:
                 if uniform_zip and resource.type in self.zip_role_store:
-                    log_info("Returning a cached .zip resource.")
                     return self.zip_role_store[resource.type]
 
-                log_info("Building a .zip resource.")
                 # Was told maybe they'd have file type info after the underscore. So gonna check.
                 postzip = resource.fname.split("_")[-1]
                 maybeftype = f".{postzip.removesuffix('.zip')}"
@@ -175,9 +169,9 @@ class RoleBuilder:
                             ext = "".join(path.suffixes)
                             if ext in file_types:
                                 zip_roles.append(ext)
-            except FileParseException:
+            except Exception as e:
                 log_info(
-                    f"Error trying to deduce the zip filetype for {resource.fname}"
+                    f"Error trying to deduce the zip filetype for {resource.fname}", e
                 )
 
         if resource.ext in file_types:

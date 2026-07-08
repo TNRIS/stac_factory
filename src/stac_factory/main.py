@@ -1,6 +1,6 @@
 from multiprocessing import Process, Queue
 from pandas import DataFrame
-import os, pystac, time, shutil, traceback
+import os, pystac, time, shutil
 
 from .root import ROOT, CATALOG_ROOT
 from ._internal.tx_pystac.tx_types import ContentInput
@@ -91,8 +91,8 @@ def build_collection(
             return None
     except Exception as e:
         log_info(f"No asset for {collection_root}")
-        tb = traceback.extract_tb(e.__traceback__)
-        log_info(f"Invalid document {collection_root} \n {tb} ")
+
+        log_info(f"Invalid document {collection_root}", e)
         return None
 
     for asset in s3_collection.paths.ASSETS:
