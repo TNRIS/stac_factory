@@ -57,7 +57,6 @@ whconf = S3Config(
     BUCKET="test-gio-data-warehouse",
     ROOT="data/cataloged/general/collections/",
     ARCHIVE_EXTENSION=".zip",
-    COLLECTION_ROOT="/",
 )
 
 gen_this_stac_collection(test_brown, whconf)

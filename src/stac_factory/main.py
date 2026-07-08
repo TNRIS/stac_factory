@@ -1,6 +1,6 @@
 from multiprocessing import Process, Queue
 from pandas import DataFrame
-import os, pystac, time, shutil
+import os, pystac, time, shutil, traceback
 
 from .root import ROOT, CATALOG_ROOT
 from ._internal.tx_pystac.tx_types import ContentInput
@@ -75,10 +75,10 @@ def build_collection(
             )
     else:
         collection_root = wh_collection["id"]
-        dest_href = f"{CATALOG_ROOT}{collection_root}"
+        dest_href = f"{CATALOG_ROOT}/{collection_root}/"
         if skipper(collection_root):
             return
-        items = wh_client.get(f"{s3_configuration.ROOT}{collection_root}")
+        items = wh_client.get(f"{s3_configuration.ROOT}/{collection_root}")
         s3_collection = S3Collection(items)
         if len(items):
             tx_collection = TxNewCollection(
@@ -87,10 +87,12 @@ def build_collection(
 
     try:
         if not s3_collection.paths.ASSETS:
-            print(f"No asset for {collection_root}")
+            log_info(f"No asset for {collection_root}. Because no assets are found.")
             return None
     except Exception as e:
-        print(f"No asset for {collection_root}")
+        log_info(f"No asset for {collection_root}")
+        tb = traceback.extract_tb(e.__traceback__)
+        log_info(f"Invalid document {collection_root} \n {tb} ")
         return None
 
     for asset in s3_collection.paths.ASSETS:

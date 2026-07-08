@@ -129,7 +129,7 @@ def build_roles_for(resource, whconfig: S3Config) -> list[str]:
                 zip_roles.append(maybeftype)
             else:
                 # Try to deduce from the files inside.
-                vsi_path = f"/vsizip//vsicurl/{whconfig.BUCKET_URL}{resource.path}"
+                vsi_path = f"/vsizip//vsicurl/{whconfig.BUCKET_URL}/{resource.path}"
                 dirs = gdal.listdir(vsi_path) or []
 
                 for d in dirs:

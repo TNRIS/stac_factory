@@ -5,7 +5,6 @@ whconf = S3Config(
     BUCKET="test-gio-data-warehouse",
     ROOT="data/cataloged/general/collections/",
     ARCHIVE_EXTENSION=".zip",
-    COLLECTION_ROOT="/",
 )
 if __name__ == "__main__":
     gen_stac_collection(whconf)

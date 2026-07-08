@@ -106,7 +106,6 @@ class Collection:
                 root,
                 catalog_status,
                 historical_status,
-                collection_root,
                 collection_id,
                 "assets",
                 "items",
@@ -249,7 +248,7 @@ class WarehouseClient(BucketClient):
 
     def get_filename_path(self, rsc_path):
         """Get file name path in s3 bucker."""
-        return f"{self.s3config.BUCKET_URL}{rsc_path}"
+        return f"{self.s3config.BUCKET_URL}/{rsc_path}"
 
     def get_vsicurl_path(self, rsc_path: str) -> str:
         """
