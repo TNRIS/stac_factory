@@ -30,7 +30,7 @@ _tx_pypgstac = [
 # Setup tx_pystac for extension
 from .tx_pystac.file_parsing import (
     TypeDescriptor,
-    build_roles_for,
+    RoleBuilder,
     file_types,
 )
 from .tx_pystac.tx_asset import TxAsset

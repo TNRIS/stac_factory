@@ -1,4 +1,3 @@
-from .. import S3Config
 from ..util import log_info
 from osgeo import gdal
 from pathlib import Path
@@ -118,36 +117,80 @@ file_types: dict[str, TypeDescriptor] = {
 }
 
 
-def build_roles_for(resource, whconfig: S3Config) -> list[str]:
-    zip_roles: list[str] = []
-    if resource.ext == ".zip":
-        try:
-            # Was told maybe they'd have file type info after the underscore. So gonna check.
-            postzip = resource.fname.split("_")[-1]
-            maybeftype = f".{postzip.removesuffix('.zip')}"
-            if maybeftype in file_types:
-                zip_roles.append(maybeftype)
-            else:
-                # Try to deduce from the files inside.
-                vsi_path = f"/vsizip//vsicurl/{whconfig.BUCKET_URL}/{resource.path}"
-                dirs = gdal.listdir(vsi_path) or []
+class RoleBuilder:
+    """Builds STAC roles for resources and caches ZIP role lookups."""
 
-                for d in dirs:
-                    if hasattr(d, "name") and isinstance(d.name, str):
-                        path = Path(d.name)
-                        ext = "".join(path.suffixes)
-                        if ext in file_types:
-                            zip_roles.append(ext)
-        except FileParseException:
-            log_info(f"Error trying to deduce the zip filetype for {resource.fname}")
+    def __init__(self, s3_bucket_url: str):
+        """
+        Initialize the role builder.
 
-    if resource.ext in file_types:
-        roles = list(file_types[resource.ext].values())
-        roles.append(resource.ext)
-        roles.append(resource.type)
-        roles.extend(zip_roles)
-        return list(dict.fromkeys(roles))
-    else:
-        raise ValueError(
-            f"Filetype {resource.ext} not found for stac_items in: {resource.path}"
-        )
+        Args:
+            s3_bucket_url: S3 bucket URL used for zip inspection.
+        """
+        self.s3_bucket_url = s3_bucket_url
+        self.zip_role_store: dict[str, list[str]] = {}
+
+    def build_roles_for(self, resource, uniform_zip: bool = False) -> list[str]:
+        """
+        Build a list of STAC roles for a resource.
+
+        For ZIP files, attempts to determine contained file types from the
+        filename or archive contents. When uniform_zip is True, roles may
+        be reused for ZIP files of the same resource type.
+
+        Args:
+            resource: Resource to generate roles for.
+            uniform_zip: Indicates that ZIP files of the same resource
+                type are expected to contain identical contents, allowing
+                cached roles to be reused.
+
+        Returns:
+            Ordered list of unique roles.
+
+        Raises:
+            ValueError: If the resource file type is unsupported.
+        """
+
+        zip_roles: list[str] = []
+        if resource.ext == ".zip":
+            try:
+                if uniform_zip and resource.type in self.zip_role_store:
+                    log_info("Returning a cached .zip resource.")
+                    return self.zip_role_store[resource.type]
+
+                log_info("Building a .zip resource.")
+                # Was told maybe they'd have file type info after the underscore. So gonna check.
+                postzip = resource.fname.split("_")[-1]
+                maybeftype = f".{postzip.removesuffix('.zip')}"
+                if maybeftype in file_types:
+                    zip_roles.append(maybeftype)
+                else:
+                    # Try to deduce from the files inside.
+                    vsi_path = f"/vsizip//vsicurl/{self.s3_bucket_url}/{resource.path}"
+                    dirs = gdal.listdir(vsi_path) or []
+
+                    for d in dirs:
+                        if hasattr(d, "name") and isinstance(d.name, str):
+                            path = Path(d.name)
+                            ext = "".join(path.suffixes)
+                            if ext in file_types:
+                                zip_roles.append(ext)
+            except FileParseException:
+                log_info(
+                    f"Error trying to deduce the zip filetype for {resource.fname}"
+                )
+
+        if resource.ext in file_types:
+            roles = list(file_types[resource.ext].values())
+            roles.append(resource.ext)
+            roles.append(resource.type)
+            roles.extend(zip_roles)
+
+            unique_roles = list(dict.fromkeys(roles))
+            if resource.ext == ".zip" and uniform_zip:
+                self.zip_role_store[resource.type] = unique_roles
+            return unique_roles
+        else:
+            raise ValueError(
+                f"Filetype {resource.ext} not found for stac_items in: {resource.path}"
+            )

@@ -7,7 +7,7 @@ import geopandas as gpd
 
 from stac_factory.root import TEST_GEOJSON_ROOT
 from .tx_asset import TxAsset
-from .file_parsing import build_roles_for
+from .file_parsing import RoleBuilder
 from ..tx_aws.s_three import WarehouseClient, Resource
 from ..util import log_info, log_exception
 from .. import S3Config
@@ -19,8 +19,10 @@ class ItemException(Exception):
 
 class TxItem(pystac.Item):
     """
-    Docstring for TxItem
-    Override pystacs Item
+    STAC Item implementation for TxGIO resources.
+
+    Builds a STAC item from one or more resources, deriving geometry,
+    assets, and metadata required for catalog publication.
     """
 
     def __init__(
@@ -31,15 +33,23 @@ class TxItem(pystac.Item):
         preprocessed_geometry: dict | None,
         resolution: str | None,
         data_wh_configuration: S3Config,
+        builder: RoleBuilder,
     ):
         """
-        TxItem Constructor
+        Initialize a TxItem from collection resources.
 
-        :param self: self
-        :param resource: aws resource
-        :type resources: List[Resource]
-        :param spatial_reference: Description
-        :param collection_name: Description
+        Args:
+            resources: Resources associated with the STAC item.
+            spatial_reference: Spatial reference identifier. If a list is
+                provided, the first value is used. Defaults to EPSG:4326
+                when not supplied.
+            collection_name: Collection containing the item.
+            preprocessed_geometry: Optional precomputed geometry data used
+                to derive item geometry and bounds.
+            resolution: Resolution metadata associated with the item.
+            data_wh_configuration: Data warehouse configuration used to
+                access supporting metadata.
+            builder: Role builder used to determine STAC asset roles.
         """
         if isinstance(spatial_reference, list):
             spatial_reference = spatial_reference[0]
@@ -108,7 +118,7 @@ class TxItem(pystac.Item):
 
         for resource in resources:
             if resource.index == tile_id:
-                roles = build_roles_for(resource, self.data_wh_configuration)
+                roles = builder.build_roles_for(resource, uniform_zip=True)
 
                 asset = TxAsset(
                     resource,
@@ -135,6 +145,7 @@ class TxItem(pystac.Item):
 
         geometry = geometries[0]
         bbox = geometries[1]
+
         super(TxItem, self).__init__(
             id=self.stac_id,
             geometry=mapping(geometry),

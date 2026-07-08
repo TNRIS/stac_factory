@@ -10,7 +10,7 @@ from ._internal import (
     TxOldCollection,
     TxLoader,
     TxCatalog,
-    build_roles_for,
+    RoleBuilder,
     WarehouseClient,
     Collection as S3Collection,
 )
@@ -96,7 +96,9 @@ def build_collection(
         return None
 
     for asset in s3_collection.paths.ASSETS:
-        roles = build_roles_for(asset, s3_configuration)
+        builder = RoleBuilder(s3_configuration.BUCKET_URL)
+
+        roles = builder.build_roles_for(asset)
         if asset.type == "index":
             passet = pystac.Asset(
                 href=asset.path,

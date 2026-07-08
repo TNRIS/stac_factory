@@ -6,7 +6,7 @@ from pandas import DataFrame
 from stac_factory.root import CITY_BOUNDARIES, COUNTY_BOUNDARIES, TEST_GEOJSON_ROOT
 
 from .tx_item import TxItem
-from .file_parsing import file_types, build_roles_for
+from .file_parsing import file_types, RoleBuilder
 from .tx_types import TileIndex
 
 # AWS Imports
@@ -78,6 +78,8 @@ class TxCollection(pystac.Collection):
         if self.index:
             self.extra_fields["txgio:geometry"] = self.index.outline
 
+        self.builder = RoleBuilder(data_wh_configuration.BUCKET_URL)
+
     def construct_spatial_tags(self):
         # Tag counties
         counties = geopandas.read_file(COUNTY_BOUNDARIES)
@@ -125,14 +127,20 @@ class TxCollection(pystac.Collection):
 
     def add_stac_items(self, resources) -> pystac.Item | pystac.STACObject | None:
         """
-        Docstring for add_stac_items
+        Create, validate, and add a STAC item for a group of resources.
 
-        :param self: Description
-        :param resources: Description
-        :type resources: List[Resource]
-        :return: Description
-        :rtype: Item | STACObject | None
+        Args:
+            resources: Resources used to construct the STAC item.
+
+        Returns:
+            The created STAC item if successful; otherwise None.
+
+        Notes:
+            The item is validated before being added to the collection. If
+            item creation or validation fails, the exception is logged and
+            None is returned.
         """
+
         tx_item = None
         sreference: str | list[str] | None = self.extra_fields.get(
             "txgio:spatial_reference"
@@ -146,6 +154,7 @@ class TxCollection(pystac.Collection):
                 self.tile,
                 self.resolution,
                 self.data_wh_configuration,
+                self.builder,
             )
             tx_item.validate()
         except Exception as e:
@@ -162,14 +171,17 @@ class TxCollection(pystac.Collection):
     def build_stac_items(self):
         resources = []
         whc: DataFrame = DataFrame(data=self.s3_collection.paths.ITEMS)
+        builder = RoleBuilder(self.data_wh_configuration.BUCKET_URL)
 
         def build_asset_item(item, description, media_type):
             title = f"{self.collection_name}-{item.ext.split('.')[-1]}"
+            if self.item_assets.get(title):
+                return  # No need to continue it already exists.
 
             if item.ext == ".zip":
                 title = f"{title}-{item.type}"
 
-            roles = build_roles_for(resource=item, whconfig=self.data_wh_configuration)
+            roles = builder.build_roles_for(item, uniform_zip=True)
 
             asset_item = pystac.ItemAssetDefinition(
                 {
