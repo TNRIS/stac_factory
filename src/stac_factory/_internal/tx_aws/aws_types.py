@@ -103,7 +103,6 @@ class S3Config:
         BUCKET_URL: str = "",
         BUCKET: str = "",
         ROOT: str = "",
-        ARCHIVE_EXTENSION: str = "",
         strip_slashes: bool = True,
     ):
         if strip_slashes:
@@ -114,5 +113,3 @@ class S3Config:
             self.BUCKET_URL = BUCKET_URL
             self.BUCKET = BUCKET
             self.ROOT = ROOT
-
-        self.ARCHIVE_EXTENSION = ARCHIVE_EXTENSION

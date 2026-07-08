@@ -125,7 +125,6 @@ class BucketClient:
         self.url = self.s3config.BUCKET_URL
         self.client: Client = boto3.client("s3")
         self.root = self.s3config.ROOT
-        self.archive_extension = self.s3config.ARCHIVE_EXTENSION
 
     def get_dirs(
         self, prefix: str, delimiter: str | None = None
@@ -199,7 +198,7 @@ class WarehouseClient(BucketClient):
         for collection_name in collection_names:
             cIndex = -2  # Collection Name index
             paths = []
-            for dir in self.get_dirs(collection_name):  # self.archive_extension):
+            for dir in self.get_dirs(collection_name):
                 if not "Contents" in dir:
                     continue
 
