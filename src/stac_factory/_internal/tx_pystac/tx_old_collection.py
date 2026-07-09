@@ -29,8 +29,8 @@ class TxOldCollection(TxCollection):
             # Run the cross walk function.
             coll_api = self.lcd_xwalk(collection_name)
 
-            if not len(s3_collection.index_asset):
-                print(f"{collection_name} index asset is empty")
+            if not s3_collection.index_asset:
+                log_info(f"{collection_name} has no index asset.")
                 return
 
             # Default extents. (Required for constructor)

@@ -46,7 +46,7 @@ class TxCollection(pystac.Collection):
         href = f"./catalog/{collection_name}/collection.json"
         wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
         # Configure panda_layer using geopandas, vsipathing capabilities.
-        vsi_path = f"/vsizip/vsicurl/{wh_client.get_filename_path(s3_collection.index_asset[0].path)}"
+        vsi_path = f"/vsizip/vsicurl/{wh_client.get_filename_path(s3_collection.index_asset.path)}"
         panda_layer = geopandas.GeoDataFrame.from_file(vsi_path, layer=0).to_crs(
             "EPSG:4326"
         )

@@ -3,7 +3,7 @@ from .tx_aws.aws_types import ItemPath, AssetPath, DataWhPath, S3Config
 from .tx_aws.s_three import (
     BucketClient,
     Client,
-    Collection,
+    S3Collection,
     WarehouseClient,
 )
 
@@ -60,6 +60,7 @@ from .tx_pystac.tx_types import (
     TypedDict,
     TileIndex,
     Category,
+    default_extent,
 )
 
 _types = [
@@ -68,6 +69,7 @@ _types = [
     "TypedDict",
     "TileIndex",
     "Category",
+    "default_extent",
 ]
 
 
