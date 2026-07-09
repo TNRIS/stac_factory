@@ -5,7 +5,9 @@ from stac_factory._internal import TypeExtent
 DATA_WH_CONF = None
 DATA_WH_CONF_HISTORIC = None
 
-test_brown = tx_types.ContentInput(
+# This ContentInput Typed Dict is meant to test a specific id
+# example: stratmap-2019-50cm-brown-county
+content_input = tx_types.ContentInput(
     **{
         "id": "stratmap-2019-50cm-brown-county",
         "title": "provided_title",
@@ -58,4 +60,4 @@ whconf = S3Config(
     ROOT="data/cataloged/general/collections/",
 )
 
-gen_this_stac_collection(test_brown, whconf)
+gen_this_stac_collection(content_input, whconf)
