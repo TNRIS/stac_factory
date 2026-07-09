@@ -195,23 +195,23 @@ def gen_stac_collection(whc) -> None:
     log_info("Done processing.")
 
 
-def gen_this_stac_collection(whc: ContentInput, s3_configuration):
+def gen_this_stac_collection(content_input: ContentInput, s3_configuration):
     """
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
     clean_stash()
-    # content = loader.get_content(whc.get("id"))
+    # content = loader.get_content(content_input.get("id"))
     # if content:
     #     # Exists so stash fastapi Metadata. (Only ran on edgecase we need to rebuild geometry or add items.)
-    #     whc = content
+    #     content_input = content
 
-    tx_collection = build_collection(whc, s3_configuration)
+    tx_collection = build_collection(content_input, s3_configuration)
     if tx_collection:
         try:
             log_info("Validating items")
             tx_collection.validate_all()
         except Exception as e:
-            log_info(f"Cannot validate {whc.id}")
+            log_info(f"Cannot validate {content_input.id}")
             return
 
         log_info("Constructing catalog.")
