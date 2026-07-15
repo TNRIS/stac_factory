@@ -1,4 +1,5 @@
 import boto3, os
+from botocore.config import Config
 from typing import List
 from types_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 from types_boto3_s3 import Client
@@ -134,7 +135,9 @@ class BucketClient:
         self.s3config = s3config
         self.name = self.s3config.BUCKET
         self.url = self.s3config.BUCKET_URL
-        self.client: Client = boto3.client("s3")
+        self.client: Client = boto3.client(
+            "s3", config=Config(connect_timeout=5, read_timeout=30)
+        )
         self.root = self.s3config.ROOT
 
     def get_dirs(
@@ -179,7 +182,7 @@ class WarehouseClient(BucketClient):
     """
 
     def get_collections(self) -> List[Collection]:
-        dirs_array = self.get_dirs(self.root, self.s3config.COLLECTION_ROOT)
+        dirs_array = self.get_dirs(self.root + "/", delimiter="/")
         collection_names = []
 
         for dir in dirs_array:

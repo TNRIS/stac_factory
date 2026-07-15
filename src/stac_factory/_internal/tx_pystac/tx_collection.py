@@ -10,7 +10,7 @@ from .file_parsing import file_types, RoleBuilder
 from .tx_types import TileIndex
 
 # AWS Imports
-from .. import Collection as S3Collection, WarehouseClient, S3Config
+from .. import S3Collection, WarehouseClient, S3Config
 from ..util import log_info, log_exception
 
 BUILD_TEST_GEOJSON = False

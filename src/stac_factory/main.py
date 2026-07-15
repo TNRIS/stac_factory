@@ -12,7 +12,7 @@ from ._internal import (
     TxCatalog,
     RoleBuilder,
     WarehouseClient,
-    Collection as S3Collection,
+    S3Collection,
 )
 
 # Toggle this to True in order to rebuild the catalog from scratch.
@@ -58,16 +58,11 @@ def build_collection(
     dest_href = ""
     if isinstance(wh_collection, str):
         collection_root = wh_collection
-        dest_href = f"{CATALOG_ROOT}/{collection_root}"
+        dest_href = f"{CATALOG_ROOT}/{collection_root}/"
 
         if skipper(collection_root):
             return
-        if os.path.exists(dest_href):
-            log_info(f"Skipping {collection_root} because it exists.")
-
-            q.put(dest_href)
-            return None
-        items = wh_client.get(f"{s3_configuration.ROOT}{collection_root}")
+        items = wh_client.get(f"{s3_configuration.ROOT}/{collection_root}")
         s3_collection = S3Collection(items)
         if len(items):
             tx_collection = TxOldCollection(
@@ -191,7 +186,7 @@ def gen_stac_collection(whc) -> None:
         collections.append(pystac.read_file(f"{collection}/collection.json"))
 
     catalog.add_children(collections)
-    catalog.normalize_and_save(root_href=CATALOG_ROOT)
+    catalog.normalize_and_save(root_href=str(CATALOG_ROOT))
     log_info("Done processing.")
 
 

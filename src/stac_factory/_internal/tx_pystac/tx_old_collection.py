@@ -6,7 +6,7 @@ from stac_factory.root import ROOT, CROSS_WALK
 from .tx_collection import TxCollection
 
 # AWS imports
-from .. import Collection as S3Collection, S3Config
+from .. import S3Collection, S3Config
 from ..util import log_info, log_exception
 
 
@@ -85,8 +85,8 @@ class TxOldCollection(TxCollection):
             return coll_api
         else:
             cross_walk = pandas.read_excel(
-                CROSS_WALK["LCD"],
-            )["LCD"]
+                CROSS_WALK,
+            )
 
             for i in cross_walk.itertuples():
 

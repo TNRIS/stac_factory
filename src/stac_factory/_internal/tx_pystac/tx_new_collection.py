@@ -37,7 +37,7 @@ class TxNewCollection(TxCollection):
         iso_temporals = (
             content_input.get("extent", {})
             .get("temporal", {})
-            .get("interval", tx_types.default_extent)
+            .get("interval", tx_types.default_extent["temporal"]["interval"])
         )
 
         temporals: list[list[datetime]] = []
@@ -106,6 +106,9 @@ class TxNewCollection(TxCollection):
 
         for field, default in extra_field_defaults.items():
             self.extra_fields[field] = self.content_input.get(field, default)
+
+        # Consider getting rid of this if txgio:resolution works.
+        self.resolution = self.extra_fields.get("txgio:resolution")
 
         # Setup providers. An extra field requiring special handling.
         txGIO = pystac.Provider(
