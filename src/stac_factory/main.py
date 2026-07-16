@@ -45,7 +45,11 @@ def skipper(collection_root):
     ]:
         return True
 
-    log_info(f"Running {collection_root}")
+    # For a quick test uncomment this if statement. It will test one collection.
+    # if not collection_root == "stratmap-2019-50cm-brown-county":
+    #     return True
+
+    # log_info(f"Running {collection_root}")
 
 
 def build_collection(
@@ -104,7 +108,7 @@ def build_collection(
             tx_collection.assets["tile_index_url"] = passet
         else:
             passet = pystac.Asset(
-                href=f"{s3_configuration.BUCKET_URL}{asset.path}",
+                href=f"{s3_configuration.BUCKET_URL}/{asset.path}",
                 media_type=asset.type,
                 extra_fields={"file:size": asset.size, "file:local_path": asset.path},
                 roles=roles,
@@ -114,7 +118,7 @@ def build_collection(
     try:
         log_info(f"Validating {collection_root}")
         tx_collection.validate_all()
-        tx_collection.save(dest_href=dest_href)
+        tx_collection.normalize_and_save(root_href=dest_href)
         log_info(f"Done validating {collection_root}")
     except Exception as e:
         log_info(f"Invalid document {collection_root}")
@@ -165,7 +169,7 @@ def gen_stac_collection(whc) -> None:
                     if not p.is_alive():
                         p.join()
                         running.remove(p)
-                time.sleep(0.05)
+                time.sleep(0.01)
 
             # Start a new process
             task.start()
@@ -183,9 +187,15 @@ def gen_stac_collection(whc) -> None:
 
     while not q.empty():
         collection = q.get()
-        collections.append(pystac.read_file(f"{collection}/collection.json"))
+        collection = pystac.read_file(f"{collection}/collection.json")
+
+        for link in collection.links:
+            link.resolve_stac_object(root=collection)
+
+        collections.append(collection)
 
     catalog.add_children(collections)
+    catalog.make_all_asset_hrefs_absolute()
     catalog.normalize_and_save(root_href=str(CATALOG_ROOT))
     log_info("Done processing.")
 
