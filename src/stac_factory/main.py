@@ -144,13 +144,17 @@ def build_collection(
         roles = builder.build_roles_for(asset, is_s3)
         asset_href = get_asset_href(asset.path)
 
+        # local_href should not be different than asset_href if we are running this as a validator.
+        local_href = asset_href
+        if(is_s3):
+            local_href = asset.path
         if asset.type == "index":
             passet = pystac.Asset(
                 href=asset_href,
                 media_type="text",
                 extra_fields={
                     "file:size": asset.size,
-                    "file:local_path": asset_href,
+                    "file:local_path": local_href,
                 },
                 roles=roles,
             )
@@ -163,7 +167,7 @@ def build_collection(
                 media_type=asset.type,
                 extra_fields={
                     "file:size": asset.size,
-                    "file:local_path": asset_href,
+                    "file:local_path": local_href,
                 },
                 roles=roles,
             )
