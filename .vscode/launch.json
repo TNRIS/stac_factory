@@ -18,6 +18,19 @@
             "justMyCode": true,
         },
         {
+            "name": "debug testhistoric",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "tests.testhistoric",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true,
+        },
+        {
             "name": "debug testbulk",
             "type": "debugpy",
             "request": "launch",

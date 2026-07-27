@@ -1,4 +1,5 @@
 import boto3, os
+from botocore.config import Config
 from typing import List
 from types_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 from types_boto3_s3 import Client
@@ -32,14 +33,28 @@ class Resource:
         return f"{self.path}"
 
 
-class Collection:
+class S3Collection:
     """
-    A object representing a collection of resources
+    Represents a single Data Warehouse collection.
+
+    A S3Collection groups the assets and items that belong to a collection.
+    During initialization, warehouse resources are parsed from their s3
+    paths and converted into AssetPath and ItemPath objects.
+
+    Attributes:
+        paths:
+            DataWhPath describing the collection's location within the
+            Data Warehouse hierarchy
+
+        index_asset:
+            The collection's index asset used to map individual items to the
+            tile index.
+            Each collection must contain exactly one index asset.
     """
 
     def __init__(self, resources):
         self.paths: DataWhPath
-        self.index_asset: List[AssetPath] = []
+        self.index_asset: AssetPath
 
         if len(resources):
             # Configure the common parts
@@ -47,7 +62,6 @@ class Collection:
             root = path_parts[0]
             catalog_status = path_parts[1]
             historical_status = path_parts[2]
-            collection_root = path_parts[3]
             collection_id = path_parts[4]
             assets: List[AssetPath] = []  # NOTE
             items: List[ItemPath] = []  # NOTE
@@ -82,10 +96,8 @@ class Collection:
                     )
 
                     if asset.type == "index":
-                        if asset.fname.lower().endswith(".zip"):
-                            self.index_asset.append(asset)
-                        elif asset.fname.lower().endswith(".tif"):
-                            self.index_asset.append(asset)
+                        self.index_asset = asset
+
                     assets.append(asset)
                 elif resource_type == "items":
                     items.append(
@@ -123,9 +135,10 @@ class BucketClient:
         self.s3config = s3config
         self.name = self.s3config.BUCKET
         self.url = self.s3config.BUCKET_URL
-        self.client: Client = boto3.client("s3")
+        self.client: Client = boto3.client(
+            "s3", config=Config(connect_timeout=5, read_timeout=30)
+        )
         self.root = self.s3config.ROOT
-        self.archive_extension = self.s3config.ARCHIVE_EXTENSION
 
     def get_dirs(
         self, prefix: str, delimiter: str | None = None
@@ -158,11 +171,18 @@ class BucketClient:
 
 class WarehouseClient(BucketClient):
     """
-    A s3 bucket client with functions for accessing the data warehouse
+    Client for accessing Data Warehouse content stored in S3.
+
+    Extends BucketClient with functionality for:
+
+    - Discovering available collections.
+    - Retrieving collection resources from S3.
+    - Building Collection objects from warehouse resources.
+    - Generating S3 and VSI-compatible resource paths.
     """
 
     def get_collections(self) -> List[Collection]:
-        dirs_array = self.get_dirs(self.root, self.s3config.COLLECTION_ROOT)
+        dirs_array = self.get_dirs(self.root + "/", delimiter="/")
         collection_names = []
 
         for dir in dirs_array:
@@ -199,7 +219,7 @@ class WarehouseClient(BucketClient):
         for collection_name in collection_names:
             cIndex = -2  # Collection Name index
             paths = []
-            for dir in self.get_dirs(collection_name):  # self.archive_extension):
+            for dir in self.get_dirs(collection_name):
                 if not "Contents" in dir:
                     continue
 
@@ -235,16 +255,6 @@ class WarehouseClient(BucketClient):
             )
 
         return s3_collections
-
-    # def collection_loop(self, callback):
-    #     """
-    #     Docstring for s3_warehouse_loop
-
-    #     :param self: Description
-    #     """
-    #     s3_wh_colls: List[Collection] = self.get_all_data_warehouse_collections()
-    #     for wh_collection in s3_wh_colls:
-    #         callback(wh_collection)
 
     def get_filename_path(self, rsc_path):
         """Get file name path in s3 bucker."""

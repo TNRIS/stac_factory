@@ -6,7 +6,7 @@ from stac_factory.root import ROOT, CROSS_WALK
 from .tx_collection import TxCollection
 
 # AWS imports
-from .. import Collection as S3Collection, S3Config
+from .. import S3Collection, S3Config
 from ..util import log_info, log_exception
 
 
@@ -29,8 +29,8 @@ class TxOldCollection(TxCollection):
             # Run the cross walk function.
             coll_api = self.lcd_xwalk(collection_name)
 
-            if not len(s3_collection.index_asset):
-                print(f"{collection_name} index asset is empty")
+            if not s3_collection.index_asset:
+                log_info(f"{collection_name} has no index asset.")
                 return
 
             # Default extents. (Required for constructor)
@@ -85,8 +85,8 @@ class TxOldCollection(TxCollection):
             return coll_api
         else:
             cross_walk = pandas.read_excel(
-                CROSS_WALK["LCD"],
-            )["LCD"]
+                CROSS_WALK,
+            )
 
             for i in cross_walk.itertuples():
 

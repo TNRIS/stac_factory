@@ -12,7 +12,7 @@ from ._internal import (
     TxCatalog,
     RoleBuilder,
     WarehouseClient,
-    Collection as S3Collection,
+    S3Collection,
 )
 
 # Toggle this to True in order to rebuild the catalog from scratch.
@@ -45,7 +45,11 @@ def skipper(collection_root):
     ]:
         return True
 
-    log_info(f"Running {collection_root}")
+    # For a quick test uncomment this if statement. It will test one collection.
+    # if not collection_root == "stratmap-2019-50cm-brown-county":
+    #     return True
+
+    # log_info(f"Running {collection_root}")
 
 
 def build_collection(
@@ -58,16 +62,11 @@ def build_collection(
     dest_href = ""
     if isinstance(wh_collection, str):
         collection_root = wh_collection
-        dest_href = f"{CATALOG_ROOT}/{collection_root}"
+        dest_href = f"{CATALOG_ROOT}/{collection_root}/"
 
         if skipper(collection_root):
             return
-        if os.path.exists(dest_href):
-            log_info(f"Skipping {collection_root} because it exists.")
-
-            q.put(dest_href)
-            return None
-        items = wh_client.get(f"{s3_configuration.ROOT}{collection_root}")
+        items = wh_client.get(f"{s3_configuration.ROOT}/{collection_root}")
         s3_collection = S3Collection(items)
         if len(items):
             tx_collection = TxOldCollection(
@@ -109,7 +108,7 @@ def build_collection(
             tx_collection.assets["tile_index_url"] = passet
         else:
             passet = pystac.Asset(
-                href=f"{s3_configuration.BUCKET_URL}{asset.path}",
+                href=f"{s3_configuration.BUCKET_URL}/{asset.path}",
                 media_type=asset.type,
                 extra_fields={"file:size": asset.size, "file:local_path": asset.path},
                 roles=roles,
@@ -119,7 +118,7 @@ def build_collection(
     try:
         log_info(f"Validating {collection_root}")
         tx_collection.validate_all()
-        tx_collection.save(dest_href=dest_href)
+        tx_collection.normalize_and_save(root_href=dest_href)
         log_info(f"Done validating {collection_root}")
     except Exception as e:
         log_info(f"Invalid document {collection_root}")
@@ -170,7 +169,7 @@ def gen_stac_collection(whc) -> None:
                     if not p.is_alive():
                         p.join()
                         running.remove(p)
-                time.sleep(0.05)
+                time.sleep(0.01)
 
             # Start a new process
             task.start()
@@ -188,30 +187,36 @@ def gen_stac_collection(whc) -> None:
 
     while not q.empty():
         collection = q.get()
-        collections.append(pystac.read_file(f"{collection}/collection.json"))
+        collection = pystac.read_file(f"{collection}/collection.json")
+
+        for link in collection.links:
+            link.resolve_stac_object(root=collection)
+
+        collections.append(collection)
 
     catalog.add_children(collections)
-    catalog.normalize_and_save(root_href=CATALOG_ROOT)
+    catalog.make_all_asset_hrefs_absolute()
+    catalog.normalize_and_save(root_href=str(CATALOG_ROOT))
     log_info("Done processing.")
 
 
-def gen_this_stac_collection(whc: ContentInput, s3_configuration):
+def gen_this_stac_collection(content_input: ContentInput, s3_configuration):
     """
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
     """
     clean_stash()
-    # content = loader.get_content(whc.get("id"))
+    # content = loader.get_content(content_input.get("id"))
     # if content:
     #     # Exists so stash fastapi Metadata. (Only ran on edgecase we need to rebuild geometry or add items.)
-    #     whc = content
+    #     content_input = content
 
-    tx_collection = build_collection(whc, s3_configuration)
+    tx_collection = build_collection(content_input, s3_configuration)
     if tx_collection:
         try:
             log_info("Validating items")
             tx_collection.validate_all()
         except Exception as e:
-            log_info(f"Cannot validate {whc.id}")
+            log_info(f"Cannot validate {content_input.id}")
             return
 
         log_info("Constructing catalog.")
