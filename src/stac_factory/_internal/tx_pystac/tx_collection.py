@@ -1,6 +1,7 @@
 import json, pystac, geopandas, os
 from osgeo import gdal
 from pandas import DataFrame
+from pathlib import Path
 
 # Local imports
 from stac_factory.root import CITY_BOUNDARIES, COUNTY_BOUNDARIES, TEST_GEOJSON_ROOT
@@ -42,14 +43,21 @@ class TxCollection(pystac.Collection):
         stac_extensions,
         textent: pystac.TemporalExtent,
         description="",
+        is_s3=True
     ):
         href = f"./catalog/{collection_name}/collection.json"
         wh_client: WarehouseClient = WarehouseClient(data_wh_configuration)
         # Configure panda_layer using geopandas, vsipathing capabilities.
         vsi_path = f"/vsizip/vsicurl/{wh_client.get_filename_path(s3_collection.index_asset.path)}"
-        panda_layer = geopandas.GeoDataFrame.from_file(vsi_path, layer=0).to_crs(
-            "EPSG:4326"
-        )
+        panda_layer = None
+        if(is_s3):
+            panda_layer = geopandas.GeoDataFrame.from_file(vsi_path, layer=0).to_crs(
+                "EPSG:4326"
+            )
+        else:
+            panda_layer = geopandas.GeoDataFrame.from_file(s3_collection.index_asset.path, layer=0).to_crs(
+                "EPSG:4326"
+            )
         spatial_extent = pystac.SpatialExtent(panda_layer.total_bounds.tolist())
         extent = pystac.Extent(spatial_extent, textent)
         super().__init__(
@@ -60,6 +68,7 @@ class TxCollection(pystac.Collection):
             extent=extent,
             catalog_type=pystac.CatalogType.SELF_CONTAINED,
         )
+        self.is_s3 = is_s3
         self.panda_layer = panda_layer
 
         self.wh_client: WarehouseClient = wh_client
@@ -200,6 +209,8 @@ class TxCollection(pystac.Collection):
             next_index = None
             if i + 1 < len(whc.values):
                 next_index = whc.values[i + 1][0].index
+            if(not self.is_s3):
+                item.path = Path(item.path).relative_to("/").as_posix()
             resources.append(item)
             type = file_types[item.ext]
             build_asset_item(item, type.get("description"), type.get("media_type"))

@@ -11,6 +11,7 @@ from .file_parsing import RoleBuilder
 from ..tx_aws.s_three import WarehouseClient, Resource
 from ..util import log_info, log_exception
 from .. import S3Config
+from ..tx_aws.aws_types import ItemPath
 
 
 class ItemException(Exception):
@@ -27,7 +28,7 @@ class TxItem(pystac.Item):
 
     def __init__(
         self,
-        resources: List[Resource],
+        resources: List[ItemPath],
         spatial_reference: str | list[str] | None,
         collection_name: str,
         preprocessed_geometry: dict | None,
@@ -51,7 +52,7 @@ class TxItem(pystac.Item):
                 access supporting metadata.
             builder: Role builder used to determine STAC asset roles.
         """
-        if isinstance(spatial_reference, list):
+        if isinstance(spatial_reference, list) and len(spatial_reference):
             spatial_reference = spatial_reference[0]
         elif not spatial_reference:
             spatial_reference = "EPSG:4326"
@@ -130,9 +131,7 @@ class TxItem(pystac.Item):
                         "file:local_path": resource.path,
                     },
                 )
-                # if not hasattr(asset,"set_owner"):
-                #     asset.set_owner = pystac.Asset.set_owner
-                # asset.set_owner = pystac.Asset.set_owner
+
                 assets[f"{collection_name}-{resource.ext.split(".")[-1]}"] = asset
             # extra_fields={
             #         "file:checksum":resource.etag.split("\"")[1],

@@ -1,5 +1,6 @@
 from multiprocessing import Process, Queue
 from pandas import DataFrame
+from pathlib import Path
 import os, pystac, time, shutil
 
 from .root import ROOT, CATALOG_ROOT
@@ -12,6 +13,7 @@ from ._internal import (
     TxCatalog,
     RoleBuilder,
     WarehouseClient,
+    LocalWarehouseClient,
     S3Collection,
 )
 
@@ -35,98 +37,155 @@ wh_client: WarehouseClient
 def skipper(collection_root):
     if collection_root in [
         "tlc-legislative-boundaries",  # No index file.
-        "stratmap-2026-city-boundaries",  # STATE_FIPS is 48, but tileid is 48000
-        "usgs-nhap-1981-cir-75cm",  # Tile Index label is "Name", should be using TileID or something.
-        "utbeg-geologic-atlas-250k",  # Tile Index column label is "Name", and values are tile id's they are just text names, seems unstandard
-        "stratmap-2021-nccir-6in-12in-caparea-brazos-kerr",  ## Tile Index column label is "Name", and values are tile id's they are just text names, seems unstandard
-        "txgio-rivers-streams-waterbodies",  # Tile Index missing
-        "noaa-2020-ccap-landcover-1m",  # Multiple, problems, seems to be using  tile index of the -r one (noaa-2020-ccap-landcover-1m-r).
-        "naip-2016-nccir-1m",  # No TileID entry for Tile 2800641 in naip-2016-nccir
+        # "stratmap-2026-city-boundaries",
+        "usgs-nhap-1981-cir-75cm",
+        # "utbeg-geologic-atlas-250k",
+        # "stratmap-2021-nccir-6in-12in-caparea-brazos-kerr",
+        # "txgio-rivers-streams-waterbodies",  # Tile Index missing
+        # "naip-2016-nccir-1m",
+        # "stratmap-2023-sanjac-river-ship-channels-bathy",
+        "usace-2018-buffalo-bayou",
+        # "noaa-2020-ccap-landcover-1m", # Has 11111 item in it
     ]:
         return True
 
     # For a quick test uncomment this if statement. It will test one collection.
-    # if not collection_root == "stratmap-2019-50cm-brown-county":
+    # if not collection_root == "stratmap-2026-city-boundaries":
     #     return True
 
-    # log_info(f"Running {collection_root}")
+    log_info(f"Running {collection_root}")
 
 
 def build_collection(
-    wh_collection, s3_configuration, q: Queue | None = None
+    wh_collection,
+    configuration,
+    q: Queue | None = None,
 ) -> None | TxOldCollection | TxNewCollection:
-    wh_client = WarehouseClient(s3_configuration)
+
+    #
+    # Determine storage backend
+    #
+    is_s3 = hasattr(configuration, "LOCAL") and not configuration.LOCAL
+
+    def get_asset_href(path):
+        if is_s3:
+            return f"{configuration.BUCKET_URL}/{path}"
+
+        return Path(path).relative_to("/").as_posix()
+
+    wh_client = (
+        WarehouseClient(configuration)
+        if is_s3
+        else LocalWarehouseClient(configuration)
+    )
+
     collection_root = ""
     tx_collection: TxNewCollection | TxOldCollection
-    s3_collection: S3Collection
+    warehouse_collection = None
     dest_href = ""
+
     if isinstance(wh_collection, str):
         collection_root = wh_collection
         dest_href = f"{CATALOG_ROOT}/{collection_root}/"
 
-        if skipper(collection_root):
-            return
-        items = wh_client.get(f"{s3_configuration.ROOT}/{collection_root}")
-        s3_collection = S3Collection(items)
+        # if skipper(collection_root):
+        #     return
+
+        items = wh_client.get(f"{configuration.ROOT}/{collection_root}")
+        warehouse_collection = S3Collection(items)
+
         if len(items):
             tx_collection = TxOldCollection(
-                wh_collection, s3_collection, s3_configuration
+                wh_collection,
+                warehouse_collection,
+                configuration,
             )
+
     else:
         collection_root = wh_collection["id"]
         dest_href = f"{CATALOG_ROOT}/{collection_root}/"
+
         if skipper(collection_root):
             return
-        items = wh_client.get(f"{s3_configuration.ROOT}/{collection_root}")
-        s3_collection = S3Collection(items)
+
+        items = wh_client.get(f"{configuration.ROOT}/{collection_root}")
+        warehouse_collection = S3Collection(items)
+
         if len(items):
             tx_collection = TxNewCollection(
-                wh_collection, s3_collection, s3_configuration
+                wh_collection,
+                warehouse_collection,
+                configuration,
+                is_s3=is_s3
             )
 
     try:
-        if not s3_collection.paths.ASSETS:
-            log_info(f"No asset for {collection_root}. Because no assets are found.")
+        if not warehouse_collection.paths.ASSETS:
+            log_info(
+                f"No asset for {collection_root}. "
+                "Because no assets are found."
+            )
             return None
+
     except Exception as e:
         log_info(f"No asset for {collection_root}")
-
         log_info(f"Invalid document {collection_root}", e)
         return None
 
-    for asset in s3_collection.paths.ASSETS:
-        builder = RoleBuilder(s3_configuration.BUCKET_URL)
+    #
+    # Asset generation
+    #
+    for asset in warehouse_collection.paths.ASSETS:
 
-        roles = builder.build_roles_for(asset)
+        builder = RoleBuilder(
+            configuration.BUCKET_URL if is_s3 else ""
+        )
+
+        roles = builder.build_roles_for(asset, is_s3)
+        asset_href = get_asset_href(asset.path)
+
         if asset.type == "index":
             passet = pystac.Asset(
-                href=asset.path,
+                href=asset_href,
                 media_type="text",
-                extra_fields={"file:size": asset.size, "file:local_path": asset.path},
+                extra_fields={
+                    "file:size": asset.size,
+                    "file:local_path": asset_href,
+                },
                 roles=roles,
             )
+
             tx_collection.assets["tile_index_url"] = passet
+
         else:
             passet = pystac.Asset(
-                href=f"{s3_configuration.BUCKET_URL}/{asset.path}",
+                href=asset_href,
                 media_type=asset.type,
-                extra_fields={"file:size": asset.size, "file:local_path": asset.path},
+                extra_fields={
+                    "file:size": asset.size,
+                    "file:local_path": asset_href,
+                },
                 roles=roles,
             )
+
             tx_collection.assets[asset.fname] = passet
 
     try:
         log_info(f"Validating {collection_root}")
+
         tx_collection.validate_all()
         tx_collection.normalize_and_save(root_href=dest_href)
+
         log_info(f"Done validating {collection_root}")
+
     except Exception as e:
         log_info(f"Invalid document {collection_root}")
         return None
+
     if q:
         q.put(dest_href)
-    return tx_collection
 
+    return tx_collection
 
 def clean_stash():
     if CLEAN_STASH_FLAG:
@@ -232,3 +291,43 @@ def gen_this_stac_collection(content_input: ContentInput, s3_configuration):
         log_info("Done getting items. Calling pypgstac loader")
         loader.load_vanilla(file=tx_collection, dict_items=dict_items)
         log_info("Done calling pypgstac loader and done with program. SUCCESS")
+
+
+def gen_local_stac_collection(
+    content_input: ContentInput,
+    local_configuration,
+):
+    """
+    Generate a STAC collection from data stored in the local data warehouse.
+
+    The collection is built from assets and items discovered on the local
+    filesystem, validated, written to the catalog, and loaded into pgSTAC.
+    """
+
+    clean_stash()
+
+    tx_collection = build_collection(
+        content_input,
+        local_configuration,
+    )
+
+    if not tx_collection:
+        log_info(f"Unable to build collection: {content_input.get("id")}")
+        return
+
+    try:
+        log_info("Validating collection items")
+        tx_collection.validate_all()
+
+    except Exception as e:
+        log_info(f"Validation failed for collection {content_input.get("id")}: {e}")
+        return
+
+    log_info("Constructing catalog")
+
+    catalog = TxCatalog()
+
+    log_info("Adding collection to catalog")
+
+    catalog.add_children
+    print("Here")

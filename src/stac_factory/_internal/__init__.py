@@ -5,6 +5,7 @@ from .tx_aws.s_three import (
     Client,
     S3Collection,
     WarehouseClient,
+    LocalWarehouseClient,
 )
 
 _tx_aws = [
@@ -16,6 +17,7 @@ _tx_aws = [
     "Client",
     "Collection",
     "WarehouseClient",
+    "LocalWarehouseClient",
 ]
 
 
