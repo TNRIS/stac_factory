@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build EXE",
+      "type": "shell",
+      "command": "pkg",
+      "args": [
+        "index.js",
+        "--targets",
+        "node20-win-x64",
+        "--output",
+        "dist/itemvalidator.exe"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

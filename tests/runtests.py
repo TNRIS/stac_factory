@@ -13,6 +13,9 @@ TESTS = [
 env = os.environ.copy()
 env["PYTHONPATH"] = "src"
 
+## NOTE: Each of these tests will print validation fails to std log output or optionally a file.
+## NOTE: return code will be 0 if unrecoverable exception occurs or validation fails on stac.
+
 for test in TESTS:
     print(f"Running {test}")
 

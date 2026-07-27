@@ -13,6 +13,11 @@
             "source": "${localEnv:HOME}/.aws",
             "target": "/root/.aws",
             "type": "bind"
+        },
+        {
+            "source": "${localEnv:HOME}/Desktop/factory_collections/",
+            "target": "/root/factory_collections/",
+            "type": "bind"
         }
     ],
     "workspaceMount": "source=${localWorkspaceFolder},target=/stac_generator,type=bind",
