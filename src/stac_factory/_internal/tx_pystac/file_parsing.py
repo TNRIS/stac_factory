@@ -126,7 +126,7 @@ class RoleBuilder:
         self.s3_bucket_url = s3_bucket_url
         self.zip_role_store: dict[str, list[str]] = {}
 
-    def build_roles_for(self, resource, uniform_zip: bool = False) -> list[str]:
+    def build_roles_for(self, resource, is_s3 = True, uniform_zip: bool = False) -> list[str]:
         """
         Build a list of STAC roles for a resource.
 
@@ -161,8 +161,11 @@ class RoleBuilder:
                 else:
                     # Try to deduce from the files inside.
                     vsi_path = f"/vsizip//vsicurl/{self.s3_bucket_url}/{resource.path}"
-                    dirs = gdal.listdir(vsi_path) or []
-
+                    dirs = []
+                    if(is_s3):
+                        dirs = gdal.listdir(vsi_path) or []
+                    else:
+                        dirs = gdal.listdir(f"/vsizip/{resource.path}")
                     for d in dirs:
                         if hasattr(d, "name") and isinstance(d.name, str):
                             path = Path(d.name)

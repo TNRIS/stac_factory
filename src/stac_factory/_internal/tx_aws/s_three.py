@@ -5,7 +5,6 @@ from types_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 from types_boto3_s3 import Client
 from pathlib import Path
 from pandas import DataFrame
-
 from .aws_types import DataWhPath, ItemPath, AssetPath
 
 
@@ -84,6 +83,12 @@ class S3Collection:
                         fname = resource_parts[7]
                     # End of WORKAROUND 1
 
+                    checksum = (
+                        r.ChecksumAlgorithm[0]
+                        if r.ChecksumAlgorithm
+                        else None
+                    )
+
                     asset = AssetPath(
                         path=r.path,
                         type=type,
@@ -92,7 +97,7 @@ class S3Collection:
                         size=r.size,
                         etag=r.etag,
                         collection_name=r.collection_name,
-                        checksum_algorithm=r.ChecksumAlgorithm[0],
+                        checksum_algorithm=checksum,
                     )
 
                     if asset.type == "index":
@@ -100,6 +105,12 @@ class S3Collection:
 
                     assets.append(asset)
                 elif resource_type == "items":
+                    checksum = (
+                        r.ChecksumAlgorithm[0]
+                        if r.ChecksumAlgorithm
+                        else None
+                    )
+
                     items.append(
                         ItemPath(
                             r.path,
@@ -110,7 +121,7 @@ class S3Collection:
                             r.size,
                             r.etag,
                             r.collection_name,
-                            r.ChecksumAlgorithm[0],
+                            checksum,
                         )
                     )
 
@@ -274,3 +285,127 @@ class WarehouseClient(BucketClient):
 
     def __init__(self, s3config):
         super().__init__(s3config)
+
+
+class LocalWarehouseClient:
+    """
+    Client for accessing Data Warehouse content stored locally.
+
+    Extends local filesystem access with functionality for:
+
+    - Discovering available collections.
+    - Retrieving collection resources.
+    - Building LocalCollection objects.
+    - Generating local resource paths.
+    """
+
+    def __init__(self, config):
+        self.config = config
+        self.root = Path(config.ROOT)
+
+    def get_collections(self) -> List:
+        """
+        Return all collection names under the warehouse root.
+        """
+
+        if not self.root.exists():
+            return []
+
+        return [p.name for p in self.root.iterdir() if p.is_dir()]
+
+    def get(self, collection_name) -> List:
+        """
+        Return Resource objects for all files in a collection.
+        """
+
+        resources = []
+
+        collection_path = Path(collection_name)
+
+        if not collection_path.exists():
+            collection_path = self.root / collection_name
+
+        if not collection_path.exists():
+            return resources
+
+        for file_path in collection_path.rglob("*"):
+            if file_path.is_file():
+                from types import SimpleNamespace
+                import hashlib
+
+                
+                md5 = hashlib.md5()
+
+                with open(file_path, "rb") as f:
+                    for chunk in iter(lambda: f.read(8192), b""):
+                        md5.update(chunk)
+
+                md5_hex = md5.hexdigest()
+
+                resources.append(
+                    Resource(
+                        path=SimpleNamespace(
+                            Key=str(file_path),
+                            ChecksumAlgorithm=["MD5"],
+                            ETag=md5_hex,
+                            Size=file_path.stat().st_size,
+                        ),
+                        collection_name=collection_path.name,
+                    )
+                )
+
+
+        return resources
+
+    def build_collections(self) -> List:
+        """
+        Build LocalCollection objects from the configured warehouse root.
+        """
+
+        collections = []
+
+        for collection_name in self.get_collections():
+
+            resources = self.get(collection_name)
+
+            if resources:
+                collections.append(LocalCollection(resources))
+
+        return collections
+
+    def get_all_data_warehouse_collections(self) -> List:
+        """
+        Return all collections in the local warehouse.
+        """
+
+        collections = self.build_collections()
+
+        if not collections:
+            raise IndexError(f"No collections found under {self.root}")
+
+        return collections
+
+    def get_filename_path(self, rsc_path):
+        """
+        Return the absolute path to a resource.
+        """
+
+        return str(Path(rsc_path).resolve())
+
+    def get_local_path(self, rsc_path: str) -> str:
+        """
+        Return a filesystem path suitable for local processing.
+        """
+
+        return str(Path(rsc_path).resolve())
+
+    def get_local_lpc_path(
+        self,
+        rsc_path: str,
+        filename: str,
+    ) -> str:
+        """
+        Return a local path for lidar point-cloud resources.
+        """
+
+        return str(Path(rsc_path).resolve())

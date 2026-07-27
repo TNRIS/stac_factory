@@ -104,6 +104,7 @@ class S3Config:
         BUCKET: str = "",
         ROOT: str = "",
         strip_slashes: bool = True,
+        LOCAL: bool = False,
     ):
         if strip_slashes:
             self.BUCKET_URL = self._strip(BUCKET_URL)
@@ -113,3 +114,4 @@ class S3Config:
             self.BUCKET_URL = BUCKET_URL
             self.BUCKET = BUCKET
             self.ROOT = ROOT
+        self.LOCAL = LOCAL

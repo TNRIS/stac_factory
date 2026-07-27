@@ -32,6 +32,7 @@ class TxNewCollection(TxCollection):
             "https://test-gio-data-warehouse.s3.us-east-1.amazonaws.com/spec/schema.json",
             "https://stac-extensions.github.io/file/v2.1.0/schema.json",
         ],
+        is_s3=True
     ):
 
         iso_temporals = (
@@ -50,7 +51,7 @@ class TxNewCollection(TxCollection):
             )
 
         temporal = pystac.TemporalExtent(temporals)
-        description = content_input.get("description", "")
+        description = content_input.get("description", "DEFAULT")
 
         super().__init__(
             data_wh_configuration,
@@ -59,6 +60,7 @@ class TxNewCollection(TxCollection):
             stac_extensions,
             temporal,
             description,
+            is_s3=is_s3
         )
 
         self.content_input = content_input
@@ -79,7 +81,7 @@ class TxNewCollection(TxCollection):
         # Populate STAC fields from content_input, falling back to default
         # values when a field is not present.
         self.s3_key = self.content_input.get("id", "")
-        self.license = self.content_input.get("license", "")
+        self.license = self.content_input.get("license", "CC0") # Default to CC0
 
         # Map this extra_field, but not needed. Temporarily maintaining for compatibility. TODO: Remove later
         self.extra_fields["txgio:s_three_bucket_key"] = self.s3_key

@@ -42,6 +42,28 @@
             },
             "cwd": "${workspaceFolder}",
             "justMyCode": true
-        }            
+        },
+        {
+            "name": "Validate Items, Index, Assets",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "tests.testvalidator",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true
+        },
+        {
+            "name": "Build Windows EXE",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "build:exe"],
+            "console": "integratedTerminal"
+        }
+
     ]
 }
