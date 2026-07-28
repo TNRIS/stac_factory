@@ -9,3 +9,5 @@ API-CollectionID-CollectionName-Crosswalk*
 testgeojson
 items
 .venv
+dist
+build

@@ -40,6 +40,13 @@
 9. press cmd-p and type `>Dev Containers Rebuild and reopen container`
 10. Subsequent starts are with > `Dev Containers Reopen in container`
 
+## Instructions for building linux distributable.
+0. Make sure test validator works in debug mode at least before attempting to create the distributable. (Highly suggested to make sure your environment is configured.)
+1. pip install pyinstaller
+2. uv run pyinstaller --collect-all pandas --collect-all numpy --collect-all pdal tests/testvalidator.py --collect-all osgeo
+3. uv run pyinstaller testvalidator.spec
+4. There is also a github action to do this.
+
 ## Use as a library
 0. prereqs, I recommend fedora os. Make sure python, python3-devel, pdal, PDAL-devel, gdal, gdal-devel, uv, and g++ packages are installed
 1. git clone https://github.com/TNRIS/stac_factory.git

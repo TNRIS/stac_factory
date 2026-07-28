@@ -1,0 +1,33 @@
+name: Build Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Restore environment
+        run: uv sync --frozen
+
+      - name: Install PyInstaller
+        run: uv pip install pyinstaller
+
+      - name: Build EXE
+        run: uv run pyinstaller --collect-all pandas --collect-all numpy --collect-all pdal tests/testvalidator.py --collect-all osgeo
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: validator
+          path: dist/
