@@ -23,12 +23,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Sync dependencies
+        run: uv sync
+
       - name: Install GDAL wheel
         run: |
           python -m pip install "https://github.com/cgohlke/geospatial-wheels/releases/download/v2026.2.26/GDAL-3.12.2-cp312-cp312-win_amd64.whl"
 
-      - name: Sync dependencies
-        run: uv sync
 
       - name: Install Nuitka
         run: uv pip install nuitka
@@ -37,6 +38,7 @@ jobs:
         run: |
           uv run python -m nuitka `
             --standalone `
+            --assume-yes-for-downloads `
             --output-dir=dist `
             src/stac_factory/main.py
 
