@@ -463,9 +463,9 @@ wheels = [
 
 [[package]]
 name = "gdal"
-version = "3.12.4"
+version = "3.12.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ba/46/254240e849a086a9e47ce1d32dae65e9781fbd47a96056b7b1655eb219d2/gdal-3.12.4.tar.gz", hash = "sha256:cba3ae61b1acc83aae494f77980c2ec86cefba4d6bfd6cac84a5552efabe90bd", size = 899408, upload-time = "2026-04-24T12:21:49.178Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b7/73/52753654d259cae674b7d4f2167d421382d9aa2ee510f047338381ae175b/gdal-3.12.2.tar.gz", hash = "sha256:a5afa8e55a19b296a004a15d38fe3ad60cc380f1f090e2aab5d35331008c970f", size = 899232, upload-time = "2026-02-09T17:53:29.78Z" }
 
 [[package]]
 name = "geopandas"
@@ -1848,7 +1848,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.42.95" },
-    { name = "gdal", specifier = "==3.12.4" },
+    { name = "gdal", specifier = "==3.12.2" },
     { name = "geopandas", specifier = ">=1.1.3" },
     { name = "jsonschema", specifier = ">=4.26.0" },
     { name = "matplotlib", specifier = ">=3.10.9" },
