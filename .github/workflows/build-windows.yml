@@ -37,8 +37,6 @@ jobs:
         run: |
           uv run python -m nuitka `
             --standalone `
-            --include-package=osgeo `
-            --include-package=psycopg `
             --output-dir=dist `
             src/stac_factory/main.py
 
