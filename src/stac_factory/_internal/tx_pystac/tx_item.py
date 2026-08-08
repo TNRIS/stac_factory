@@ -1,4 +1,4 @@
-import pystac, shapely, json, pdal, remotezip, os
+import pystac, shapely, json, remotezip, os
 from datetime import datetime
 from osgeo import gdal
 from shapely.geometry import mapping
@@ -184,9 +184,9 @@ class TxItem(pystac.Item):
         if dem_item:
             return self.build_dem_stac(dem_item)
 
-        lpc_item = rsc_contains("lpc")
-        if lpc_item:
-            return self.build_laz_stac(lpc_item)
+        # lpc_item = rsc_contains("lpc")
+        # if lpc_item:
+        #     return self.build_laz_stac(lpc_item)
 
         hypso_item = rsc_contains("hypso")
         if hypso_item:
@@ -297,33 +297,33 @@ class TxItem(pystac.Item):
 
         return [outline, panda_layer.total_bounds.tolist()]
 
-    def build_laz_stac(self, rsc: Resource):
-        """
-        The meta name simply follows the zip name with .met.
-        """
-        vsi_path = f"/vsizip/vsicurl/{self.wh_client.get_filename_path(rsc.path)}"
-        files = gdal.ReadDir(vsi_path)
+    # def build_laz_stac(self, rsc: Resource):
+    #     """
+    #     The meta name simply follows the zip name with .met.
+    #     """
+    #     vsi_path = f"/vsizip/vsicurl/{self.wh_client.get_filename_path(rsc.path)}"
+    #     files = gdal.ReadDir(vsi_path)
 
-        if files and len(files) > 1:
-            vsi_path = (
-                f"{vsi_path}/{[file for file in files if file.endswith('.laz')][0]}"
-            )
+    #     if files and len(files) > 1:
+    #         vsi_path = (
+    #             f"{vsi_path}/{[file for file in files if file.endswith('.laz')][0]}"
+    #         )
 
-        pipeline = (
-            pdal.Reader.las(
-                filename=vsi_path, default_srs=f"EPSG:{self.spatial_reference}"
-            )
-            | pdal.Filter.stats()
-        )
-        pipeline.execute()
-        stats = pipeline.metadata.get("metadata").get("filters.stats")
-        bounds = stats.get("bbox").get("EPSG:4326").get("outline")
-        bbox = pipeline.metadata["metadata"]["filters.stats"]["bbox"][f"EPSG:4326"][
-            "bbox"
-        ]
-        bbox = [bbox["maxx"], bbox["maxy"], bbox["minx"], bbox["miny"]]
+    #     pipeline = (
+    #         pdal.Reader.las(
+    #             filename=vsi_path, default_srs=f"EPSG:{self.spatial_reference}"
+    #         )
+    #         | pdal.Filter.stats()
+    #     )
+    #     pipeline.execute()
+    #     stats = pipeline.metadata.get("metadata").get("filters.stats")
+    #     bounds = stats.get("bbox").get("EPSG:4326").get("outline")
+    #     bbox = pipeline.metadata["metadata"]["filters.stats"]["bbox"][f"EPSG:4326"][
+    #         "bbox"
+    #     ]
+    #     bbox = [bbox["maxx"], bbox["maxy"], bbox["minx"], bbox["miny"]]
 
-        return [bounds, bbox]
+    #     return [bounds, bbox]
 
     def build_cir_stac(self, rsc: Resource):
         """
