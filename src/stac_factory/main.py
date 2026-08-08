@@ -3,10 +3,10 @@ from pandas import DataFrame
 from pathlib import Path
 import os, pystac, time, shutil
 
-from .root import ROOT, CATALOG_ROOT
-from ._internal.tx_pystac.tx_types import ContentInput
-from ._internal.util import log_info
-from ._internal import (
+from stac_factory.root import ROOT, CATALOG_ROOT
+from stac_factory._internal.tx_pystac.tx_types import ContentInput
+from stac_factory._internal.util import log_info
+from stac_factory._internal import (
     TxNewCollection,
     TxOldCollection,
     TxLoader,
