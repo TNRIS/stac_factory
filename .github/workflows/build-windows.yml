@@ -2,32 +2,53 @@ name: Build Windows
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install uv
-        run: pip install uv
+        uses: astral-sh/setup-uv@v5
 
-      - name: Restore environment
-        run: uv sync --frozen
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
 
-      - name: Install PyInstaller
-        run: uv pip install pyinstaller
+      - name: Sync dependencies
+        run: uv sync
 
-      - name: Build EXE
-        run: uv run pyinstaller --collect-all pandas --collect-all numpy --collect-all pdal tests/testvalidator.py --collect-all osgeo
+      - name: Install Nuitka
+        run: uv pip install nuitka
 
-      - name: Upload Artifact
+      - name: Build
+        run: |
+          uv run python -m nuitka `
+            --standalone `
+            --follow-imports `
+            --enable-plugin=numpy `
+            --include-package=stac_factory `
+            --include-package=osgeo `
+            --include-package=psycopg `
+            --output-dir=dist `
+            src/stac_factory/main.py
+
+      - name: Compress output
+        run: |
+          Compress-Archive `
+            -Path dist\main.dist `
+            -DestinationPath dist\itemvalidator-windows.zip
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: validator
-          path: dist/
+          name: itemvalidator-windows
+          path: dist/itemvalidator-windows.zip
