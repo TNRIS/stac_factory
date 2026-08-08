@@ -23,6 +23,10 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Test GDAL wheel availability
+        run: |
+        pip install --only-binary=:all: gdal==3.12.2
+
       - name: Sync dependencies
         run: uv sync
 
