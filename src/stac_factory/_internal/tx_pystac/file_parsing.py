@@ -87,6 +87,16 @@ file_types: dict[str, TypeDescriptor] = {
         "text/plain",
         "metadata",
     ),
+    ".tif.vat.dbf": TypeDescriptor(
+        "Raster Attribute Table (VAT) for GeoTIFF",
+        "application/vnd.dbase",
+        "metadata",
+    ),
+    ".tif.vat.cpg": TypeDescriptor(
+        "Character encoding definition for GeoTIFF Raster Attribute Table (VAT)",
+        "text/plain",
+        "metadata",
+    ),
     ".sid": TypeDescriptor("MrSID raster image", "image/x-mrsid", "data"),
     ".zip": TypeDescriptor("Zip archive", "application/zip", "data"),
     ".tif": TypeDescriptor("Tif image", "image/tiff", "data"),
