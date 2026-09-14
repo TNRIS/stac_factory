@@ -36,16 +36,24 @@ wh_client: WarehouseClient
 
 def skipper(collection_root):
     if collection_root in [
-        "tlc-legislative-boundaries",  # No index file.
-        # "stratmap-2026-city-boundaries",
-        "usgs-nhap-1981-cir-75cm",
-        # "utbeg-geologic-atlas-250k",
-        # "stratmap-2021-nccir-6in-12in-caparea-brazos-kerr",
-        # "txgio-rivers-streams-waterbodies",  # Tile Index missing
-        # "naip-2016-nccir-1m",
-        # "stratmap-2023-sanjac-river-ship-channels-bathy",
+        ########### Tested 08/16/2026
+        #### Tile ID format like this 25970319830127 but directories are 6 digit id
+        "usgs-nhap-1981-cir-75cm", 
+
+        #### Attribute table doesn't have directories with key, but a type ####
+        "txgio-rivers-streams-waterbodies", # See above similar to 2023-sanjac-river...
+        "stratmap-2023-sanjac-river-ship-channels-bathy",
+            # Could whoever creates tile indexes put these values in the tile index? I need to get their footprint.
+            # san-jacinto-river/			
+            # ship-channel-shallows-a/			
+            # ship-channel-shallows-b/			
+            # ship-channel-shallows-c/			
+            # ship-channel-shallows-d/
+        "txgio-rivers-streams-waterbodies_hydro", #Tile ID is 48 but directory name is hydro
+
+        ####### Not tested since July
+        "tlc-legislative-boundaries",  # No index file. July
         "usace-2018-buffalo-bayou",
-        # "noaa-2020-ccap-landcover-1m", # Has 11111 item in it
     ]:
         return True
 
@@ -88,8 +96,8 @@ def build_collection(
         collection_root = wh_collection
         dest_href = f"{CATALOG_ROOT}/{collection_root}/"
 
-        # if skipper(collection_root):
-        #     return
+        if skipper(collection_root):
+            return
 
         items = wh_client.get(f"{configuration.ROOT}/{collection_root}")
         warehouse_collection = S3Collection(items)
