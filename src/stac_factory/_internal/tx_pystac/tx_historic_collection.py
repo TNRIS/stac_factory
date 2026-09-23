@@ -127,6 +127,7 @@ class TxHistoricCollection(TxCollection):
         self.extra_fields["txgio:photo_index_only"] = coll_api["photo_index_only"]
         self.extra_fields["txgio:media_type"] = coll_api["media_type"]
         self.extra_fields["txgio:general_scale"] = coll_api["general_scale"]
+        self.extra_fields["txgio:products"] = coll_api["products"]
 
         self.license = (
             coll_api["license_abbreviation"]
