@@ -201,6 +201,8 @@ class TxOldCollection(TxCollection):
                 source["name"] = coll_api["source_name"]
 
         self.extra_fields["txgio:source"] = source
+        self.extra_fields["txgio:partners"] = coll_api["partners"]
+
         # Configure some standard collection values.
         self.description = coll_api["description"]
         self.keywords = self.csv_to_arr(coll_api["tags"])
@@ -234,29 +236,6 @@ class TxOldCollection(TxCollection):
             )
             self.add_asset("supplemental_report_url", supplemental_report_url)
 
-        if coll_api["index_service_url"]:
-            index_service_url = pystac.Asset(
-                href=coll_api["index_service_url"], media_type="text"
-            )
-            self.add_asset("index_service_url", index_service_url)
-
-        if coll_api["frames_service_url"]:
-            frames_service_url = pystac.Asset(
-                href=coll_api["frames_service_url"], media_type="text"
-            )
-            self.add_asset("frames_service_url", frames_service_url)
-
-        if coll_api["mosaic_service_url"]:
-            mosaic_service_url = pystac.Asset(
-                href=coll_api["mosaic_service_url"], media_type="text"
-            )
-            self.add_asset("mosaic_service_url", mosaic_service_url)
-
-        if coll_api["scanned_index_ls4_links"]:
-            scanned_index_ls4_links = pystac.Asset(
-                href=coll_api["scanned_index_ls4_links"], media_type="text"
-            )
-            self.add_asset("scanned_index_ls4_links", scanned_index_ls4_links)
 
         self.resolution = coll_api["resolution"]
 
