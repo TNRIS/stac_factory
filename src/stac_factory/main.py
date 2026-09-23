@@ -9,6 +9,7 @@ from stac_factory._internal.util import log_info
 from stac_factory._internal import (
     TxNewCollection,
     TxOldCollection,
+    TxHistoricCollection,
     TxLoader,
     TxCatalog,
     RoleBuilder,
@@ -204,7 +205,6 @@ def clean_stash():
         if os.path.exists(CATALOG_ROOT):
             shutil.rmtree(CATALOG_ROOT)
 
-
 def gen_stac_collection(whc) -> None:
     """
     Docstring for gen_stac_item
@@ -270,7 +270,6 @@ def gen_stac_collection(whc) -> None:
     catalog.normalize_and_save(root_href=str(CATALOG_ROOT))
     log_info("Done processing.")
 
-
 def gen_this_stac_collection(content_input: ContentInput, s3_configuration):
     """
     Gather the directory structure of the TNRIS data warehouse using the WarehouseClient.
@@ -303,7 +302,6 @@ def gen_this_stac_collection(content_input: ContentInput, s3_configuration):
         log_info("Done getting items. Calling pypgstac loader")
         loader.load_vanilla(file=tx_collection, dict_items=dict_items)
         log_info("Done calling pypgstac loader and done with program. SUCCESS")
-
 
 def gen_local_stac_collection(
     content_input: ContentInput,
@@ -343,3 +341,90 @@ def gen_local_stac_collection(
 
     catalog.add_children
     print("Here")
+
+def gen_historic_collection(content_input: ContentInput, s3_configuration):
+    clean_stash()
+    wh_client = (WarehouseClient(s3_configuration))
+
+    collection_root = ""
+    historic_collection: TxHistoricCollection
+    warehouse_collection = None
+    dest_href = ""
+
+  
+    collection_root = content_input["id"]
+    dest_href = f"{CATALOG_ROOT}/{collection_root}/"
+
+    items = wh_client.get(f"{s3_configuration.ROOT}/{collection_root}")
+    warehouse_collection = S3Collection(items)
+
+    if len(items):
+        historic_collection = TxHistoricCollection(
+            content_input['id'],
+            warehouse_collection,
+            s3_configuration
+        )
+
+    try:
+        if not warehouse_collection.paths.ASSETS:
+            log_info(
+                f"No asset for {collection_root}. "
+                "Because no assets are found."
+            )
+            return None
+
+    except Exception as e:
+        log_info(f"No asset for {collection_root}")
+        log_info(f"Invalid document {collection_root}", e)
+        return None
+
+    #
+    # Asset generation
+    #
+    for asset in warehouse_collection.paths.ASSETS:
+
+        builder = RoleBuilder(s3_configuration.BUCKET_URL)
+
+        roles = builder.build_roles_for(asset)
+        asset_href = Path(f"{s3_configuration.BUCKET_URL}/{asset.path}").as_posix()
+
+        local_href = asset.path
+        if asset.type == "index":
+            passet = pystac.Asset(
+                href=asset_href,
+                media_type="text",
+                extra_fields={
+                    "file:size": asset.size,
+                    "file:local_path": local_href,
+                },
+                roles=roles,
+            )
+
+            historic_collection.assets["tile_index_url"] = passet
+
+        else:
+            passet = pystac.Asset(
+                href=asset_href,
+                media_type=asset.type,
+                extra_fields={
+                    "file:size": asset.size,
+                    "file:local_path": local_href,
+                },
+                roles=roles,
+            )
+
+            historic_collection.assets[asset.fname] = passet
+
+    try:
+        log_info(f"Validating {collection_root}")
+
+        historic_collection.validate_all()
+        historic_collection.normalize_and_save(root_href=dest_href)
+
+        log_info(f"Done validating {collection_root}")
+
+    except Exception as e:
+        log_info(f"Invalid document {collection_root}")
+        return None
+
+    return historic_collection

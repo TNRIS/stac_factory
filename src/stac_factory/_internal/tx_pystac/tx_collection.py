@@ -161,7 +161,7 @@ class TxCollection(pystac.Collection):
                 sreference,
                 self.id,
                 self.tile,
-                self.resolution,
+                getattr(self, "resolution", None),
                 self.data_wh_configuration,
                 self.builder,
             )
