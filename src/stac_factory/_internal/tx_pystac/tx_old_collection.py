@@ -2,7 +2,7 @@ import pystac, requests
 from datetime import datetime
 import pandas
 
-from stac_factory.root import ROOT, CROSS_WALK
+from stac_factory.root import CROSS_WALK
 from .tx_collection import TxCollection
 
 # AWS imports
@@ -168,21 +168,16 @@ class TxOldCollection(TxCollection):
             self.add_asset("images", images)
 
         # Convert csv and category into a array. I chose to do it this way because it captures csv's with a space, and without.
-        # Setup providers
-        txGIO = pystac.Provider(
-            name="TxGIO",
-            url="https://geographic.texas.gov/",
-            description="Texas Geographic Information Office",
-        )
-        self.providers = [txGIO]
-        if coll_api["partners"] and (
-            not (coll_api["partners"] == "Texas Water Development Board/TxGIO")
-        ):
-            self.providers.append(
-                pystac.Provider(name=coll_api["partners"], url="", description="")
-            )
 
-        provider = {"abbreviation": "", "contact": "", "data_website": "", "name": ""}
+
+        source = {
+            "name": "",
+            "abbreviation": None,
+            "website": None,
+            "data_website": None,
+            "contact": None
+        }
+
         if (
             coll_api["source_abbreviation"]
             or coll_api["source_contact"]
@@ -191,28 +186,21 @@ class TxOldCollection(TxCollection):
         ):
 
             if coll_api["source_abbreviation"]:
-                provider["abbreviation"] = coll_api["source_abbreviation"]
+                source["abbreviation"] = coll_api["source_abbreviation"]
 
             if coll_api["source_contact"]:
-                provider["contact"] = coll_api["source_contact"]
+                source["contact"] = coll_api["source_contact"]
 
             if coll_api["source_data_website"]:
-                provider["data_website"] = coll_api["source_data_website"]
+                source["data_website"] = coll_api["source_data_website"]
+
+            if coll_api["source_website"]:
+                source["website"] = coll_api["source_website"]
 
             if coll_api["source_name"]:
-                provider["name"] = coll_api["source_name"]
+                source["name"] = coll_api["source_name"]
 
-            self.providers.append(
-                pystac.Provider(
-                    name=provider["name"],
-                    url=provider["data_website"],
-                    extra_fields={
-                        "data_website": provider["data_website"],
-                        "contact": provider["contact"],
-                    },
-                )
-            )
-
+        self.extra_fields["txgio:source"] = source
         # Configure some standard collection values.
         self.description = coll_api["description"]
         self.keywords = self.csv_to_arr(coll_api["tags"])
@@ -245,6 +233,30 @@ class TxOldCollection(TxCollection):
                 href=coll_api["supplemental_report_url"], media_type="text"
             )
             self.add_asset("supplemental_report_url", supplemental_report_url)
+
+        if coll_api["index_service_url"]:
+            index_service_url = pystac.Asset(
+                href=coll_api["index_service_url"], media_type="text"
+            )
+            self.add_asset("index_service_url", index_service_url)
+
+        if coll_api["frames_service_url"]:
+            frames_service_url = pystac.Asset(
+                href=coll_api["frames_service_url"], media_type="text"
+            )
+            self.add_asset("frames_service_url", frames_service_url)
+
+        if coll_api["mosaic_service_url"]:
+            mosaic_service_url = pystac.Asset(
+                href=coll_api["mosaic_service_url"], media_type="text"
+            )
+            self.add_asset("mosaic_service_url", mosaic_service_url)
+
+        if coll_api["scanned_index_ls4_links"]:
+            scanned_index_ls4_links = pystac.Asset(
+                href=coll_api["scanned_index_ls4_links"], media_type="text"
+            )
+            self.add_asset("scanned_index_ls4_links", scanned_index_ls4_links)
 
         self.resolution = coll_api["resolution"]
 
