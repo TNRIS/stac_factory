@@ -174,6 +174,13 @@ class TxHistoricCollection(TxCollection):
                 )
             )
 
+        if coll_api["scanned_index_ls4_links"]:
+            scanned_index_ls4_links = pystac.Asset(
+                href=coll_api["scanned_index_ls4_links"], media_type="text"
+            )
+            self.add_asset("scanned_index_ls4_links", scanned_index_ls4_links)
+
+
         source = {
             "name": "",
             "abbreviation": None,
