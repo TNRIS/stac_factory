@@ -41,6 +41,7 @@ from .tx_pystac.tx_item import TxItem
 from .tx_pystac.tx_collection import TxCollection
 from .tx_pystac.tx_new_collection import TxNewCollection
 from .tx_pystac.tx_old_collection import TxOldCollection
+from .tx_pystac.tx_historic_collection import TxHistoricCollection
 
 _tx_pystac = [
     "TypeDescriptor",
