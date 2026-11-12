@@ -20,7 +20,7 @@ content_input = tx_types.ContentInput(
         ),
         "txgio:categories": ["Imagery", "Historic Imagery", "Elevation"],
         "txgio:notes": "provided notes",
-        "txgio:spatial_keywords": "provided spatial_keywords",
+        "txgio:spatial_keywords": ["provided", "spatial_keywords"],
         "txgio:spatial_reference": ["provided spatial_reference", "thing1", "thing2"],
         "txgio:bands": ["provided bands", "thing1", "thing2"],
         "txgio:file_type": "provided file_type",

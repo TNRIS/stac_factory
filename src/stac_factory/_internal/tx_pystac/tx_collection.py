@@ -123,7 +123,7 @@ class TxCollection(pystac.Collection):
         except:
             log_info("Couldn't write an example geojson")
 
-        self.extra_fields["txgio:spatial_keywords"] = spatial_tags[1:]
+        self.extra_fields["txgio:spatial_keywords"] = self.csv_to_arr(spatial_tags[1:])
 
     def csv_to_arr(self, csv: str) -> list[str]:
         if not csv or len(csv) < 1:

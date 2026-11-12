@@ -192,7 +192,7 @@ def build_collection(
         log_info(f"Done validating {collection_root}")
 
     except Exception as e:
-        log_info(f"Invalid document {collection_root}")
+        log_info(f"Invalid document {collection_root}", e)
         return None
 
     if q:
@@ -424,7 +424,7 @@ def gen_historic_collection(content_input: ContentInput, s3_configuration):
         log_info(f"Done validating {collection_root}")
 
     except Exception as e:
-        log_info(f"Invalid document {collection_root}")
+        log_info(f"Invalid document {collection_root}", e)
         return None
 
     return historic_collection

@@ -69,6 +69,9 @@ class TxItem(pystac.Item):
         tile_id = None
         try:
             tile_id = resources[0].index
+            if tile_id == '48':
+                tile_id = '48000'
+            
         except Exception as e:
             log_info(f"Cannot find tile_id for resource {collection_name}")
         if preprocessed_geometry and tile_id and len(tile_id):
