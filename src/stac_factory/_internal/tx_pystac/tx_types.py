@@ -71,7 +71,7 @@ ContentInput = TypedDict(
         "txgio:publication_date": NotRequired[str],
         "txgio:banner_text": NotRequired[str],
         "txgio:notes": NotRequired[str],
-        "txgio:spatial_keywords": NotRequired[str],
+        "txgio:spatial_keywords": NotRequired[list[str]],
         "txgio:categories": NotRequired[list[Category]],
         "keywords": NotRequired[list[str]],
         "extent": NotRequired[TypeExtent],

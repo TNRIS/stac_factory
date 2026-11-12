@@ -1,4 +1,4 @@
-import pystac, requests
+import pystac, requests, json
 from datetime import datetime
 import pandas
 
@@ -43,10 +43,10 @@ class TxHistoricCollection(TxCollection):
                 )
                 coll_api = coll_api["results"][0]
 
-                if "acquisition_date" in coll_api:
+                if "acquisition_date" in coll_api and "from_date" in coll_api:
                     temporal = pystac.TemporalExtent(
                         [
-                            datetime.fromisoformat(coll_api.get("acquisition_date")),
+                            datetime.fromisoformat(coll_api.get("from_date")),
                             datetime.fromisoformat(coll_api.get("acquisition_date")),
                         ]
                     )
@@ -125,9 +125,17 @@ class TxHistoricCollection(TxCollection):
         # Historic-specific fields
         self.extra_fields["txgio:fully_scanned"] = coll_api["fully_scanned"]
         self.extra_fields["txgio:photo_index_only"] = coll_api["photo_index_only"]
-        self.extra_fields["txgio:media_type"] = coll_api["media_type"]
-        self.extra_fields["txgio:general_scale"] = coll_api["general_scale"]
-        self.extra_fields["txgio:products"] = coll_api["products"]
+        self.extra_fields["txgio:general_scale"] = ''
+
+        products = {}
+        products_obj = json.loads(coll_api.products)
+        # Parse products.
+        products['coverage'] = products_obj['coverage']
+        products['number_of_frames'] = products_obj['number_of_frames']
+        products['print_type'] = products_obj['print_type']
+        products['frame_size'] = products_obj['frame_size']
+
+        self.extra_fields["txgio:products"] = products
 
         self.license = (
             coll_api["license_abbreviation"]

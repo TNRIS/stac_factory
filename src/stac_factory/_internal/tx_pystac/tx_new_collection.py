@@ -102,7 +102,7 @@ class TxNewCollection(TxCollection):
             "txgio:last_edited_by": "",
             "txgio:template": "",
             "txgio:notes": "",
-            "txgio:spatial_keywords": "",
+            "txgio:spatial_keywords": [],
             "txgio:resolution": "",
         }
 
